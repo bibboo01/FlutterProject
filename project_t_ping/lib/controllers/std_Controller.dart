@@ -62,6 +62,9 @@ class StdInfo {
       }),
     );
     print('post is  ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Product Post successfully');
+    }
   }
 
   Future<List<studentInfo>> fetchStd(
@@ -80,22 +83,21 @@ class StdInfo {
       print('Product fetched successfully');
       final List<dynamic> jsonResponse = json.decode(response.body);
       return jsonResponse.map((data) => studentInfo.fromJson(data)).toList();
-    } else if (response.statusCode == 403) {
-      print('Access denied, logging out.');
-      Logout(context);
-      throw Exception('Access denied');
     } else if (response.statusCode == 401) {
-      final newAccessToken = await AuthService().refresh(context, refreshToken);
-      if (newAccessToken != null) {
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
         return await fetchStd(context, accessToken, refreshToken);
       } else {
-        print('Failed to refresh token, logging out.');
+        print('logging out.');
         Logout(context);
-        throw Exception('Failed to refresh token');
       }
-    } else {
-      throw Exception('Failed to fetch product: ${response.statusCode}');
     }
+    throw Exception('Failed to fetch student data: ${response.statusCode}');
   }
 
   Future<studentInfo> fetchstudent(BuildContext context, String id,
@@ -113,42 +115,54 @@ class StdInfo {
       print('Product fetched successfully');
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
       return studentInfo.fromJson(jsonResponse);
-    } else if (response.statusCode == 403) {
-      print('Access denied, logging out.');
-      Logout(context);
-      throw Exception('Access denied');
     } else if (response.statusCode == 401) {
-      final newAccessToken = await AuthService().refresh(context, refreshToken);
-      if (newAccessToken != null) {
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
         return await fetchstudent(context, id, accessToken, refreshToken);
       } else {
-        print('Failed to refresh token, logging out.');
+        print('logging out.');
         Logout(context);
-        throw Exception('Failed to refresh token');
       }
-    } else {
-      throw Exception('Failed to fetch product: ${response.statusCode}');
     }
+    throw Exception('Failed to fetch student data: ${response.statusCode}');
   }
 
   Future<void> delstd(BuildContext context, String id, String accessToken,
       String refreshToken) async {
-    final response = await http.delete(
-      Uri.parse('$apiURL/auth/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
-    print("Delete is ${response.statusCode}");
-    if (response.statusCode == 200) {
-      print('Delete successfully');
-    } else if (response.statusCode == 403) {
-      Logout(context);
-      print('logging out');
-    } else if (response.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      delstd(context, id, accessToken, refreshToken);
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiURL/auth/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      print("Delete response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        print('Delete successfully');
+      } else if (response.statusCode == 401) {
+        print('logging out.');
+        Logout(context);
+        throw Exception('Token denied');
+      } else if (response.statusCode == 403) {
+        final newAccessToken =
+            await AuthService().refreshToken(context, refreshToken);
+        if (newAccessToken != null && newAccessToken.isNotEmpty) {
+          return await delstd(context, id, accessToken, refreshToken);
+        } else {
+          print('logging out.');
+          Logout(context);
+        }
+      }
+    } catch (e) {
+      print('Exception occurred while Delete student: $e');
     }
   }
 
@@ -176,7 +190,9 @@ class StdInfo {
       String allergicCondition,
       String accessToken,
       String refreshToken) async {
-    final resporse = await http.put(Uri.parse("$apiURL/auth/fill_info/$stdId"),
+    try {
+      final response = await http.put(
+        Uri.parse("$apiURL/auth/fill_info/$stdId"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -201,40 +217,53 @@ class StdInfo {
           "std_parent_rela": stdParentRela,
           "allergic_things": allergicThings,
           "allergic_drugs": allergicDrugs,
-          "allergic_condition": allergicCondition
-        }));
-    print("Edit is ${resporse.statusCode}");
-    if (resporse.statusCode == 200) {
-      print('student Edit successfully');
-    } else if (resporse.statusCode == 403) {
-      Logout(context);
-      print('logging out');
-    } else if (resporse.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      editstudents(
-          context,
-          stdId,
-          prefix,
-          stdFname,
-          stdLname,
-          stdNickname,
-          stdReligion,
-          major,
-          stdTel,
-          schName,
-          schProvince,
-          stdFatherName,
-          stdFatherTel,
-          stdMotherName,
-          stdMotherTel,
-          stdParentName,
-          stdParentTel,
-          stdParentRela,
-          allergicThings,
-          allergicDrugs,
-          allergicCondition,
-          accessToken,
-          refreshToken);
+          "allergic_condition": allergicCondition,
+        }),
+      );
+
+      print("Edit response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        print('Student edited successfully');
+      } else if (response.statusCode == 401) {
+        print('logging out.');
+        Logout(context);
+        throw Exception('Token denied');
+      } else if (response.statusCode == 403) {
+        final newAccessToken =
+            await AuthService().refreshToken(context, refreshToken);
+        if (newAccessToken != null && newAccessToken.isNotEmpty) {
+          return await editstudents(
+              context,
+              stdId,
+              prefix,
+              stdFname,
+              stdLname,
+              stdNickname,
+              stdReligion,
+              major,
+              stdTel,
+              schName,
+              schProvince,
+              stdFatherName,
+              stdFatherTel,
+              stdMotherName,
+              stdMotherTel,
+              stdParentName,
+              stdParentTel,
+              stdParentRela,
+              allergicThings,
+              allergicDrugs,
+              allergicCondition,
+              accessToken,
+              refreshToken);
+        } else {
+          print('logging out.');
+          Logout(context);
+        }
+      }
+    } catch (e) {
+      print('Exception occurred while editing student: $e');
     }
   }
 

@@ -33,10 +33,10 @@ class _EditPageState extends State<EditPage> {
     String? refreshToken = userProvider.refreshToken;
     if (id.isNotEmpty) {
       final data = await Usercontroller().getUser(
-          context, id, accessToken, refreshToken); // Ensure proper case
+          context, id, accessToken!, refreshToken!); // Ensure proper case
       _usernameController.text = data.username;
       _emailController.text = data.email;
-      _valueRole = data.role; // Assuming data.role is an int
+      _valueRole = data.role;
     }
   }
 
@@ -49,6 +49,7 @@ class _EditPageState extends State<EditPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
+
     print(
         'Updating user: $id, Username: $username, Email: $email, Role: $role');
     try {
@@ -58,8 +59,8 @@ class _EditPageState extends State<EditPage> {
           username,
           email,
           _selectRole!,
-          accessToken,
-          refreshToken); // Updated to exclude password
+          accessToken!,
+          refreshToken!); // Updated to exclude password
       Navigator.pushNamed(context, '/admin');
     } catch (e) {
       print('Error updating user: $e');

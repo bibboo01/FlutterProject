@@ -39,23 +39,17 @@ exports.login = async (req, res) => {
 
         const user = await User.findOne({ username }).select("-password");
 
-        const accessToken = jwt.sign({
-            userId: user._id
-        }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: "1m"
-        });
-        const refreshToken = jwt.sign({
-            userId: user._id
-        }, process.env.REFRESH_TOKEN_SECRET, {
-            expiresIn: "20m"
-        });
-        res.json({
-            user: user,
-            token: {
-                accessToken,
-                refreshToken
-            }
-        });
+        const accessToken = jwt.sign(
+            { userId: user._id },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '30s' }
+        );
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '1h' }
+        );
+        res.status(200).json({ user: user, token: { accessToken, refreshToken }});
     } catch (err) {
         console.log(err);
     }

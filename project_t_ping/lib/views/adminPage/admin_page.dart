@@ -25,8 +25,8 @@ class _AdminPageState extends State<AdminPage> {
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
     try {
-      final allUser =
-          await Usercontroller().fetchUser(context, accessToken, refreshToken);
+      final allUser = await Usercontroller()
+          .fetchUser(context, accessToken!, refreshToken!);
       setState(() {
         _user = allUser;
         _isLoading = false;
@@ -70,7 +70,8 @@ class _AdminPageState extends State<AdminPage> {
 
     if (confirmed == true) {
       try {
-        await Usercontroller().delUser(context, id, accessToken, refreshToken);
+        await Usercontroller()
+            .delUser(context, id, accessToken!, refreshToken!);
         _fetchAlluser();
       } catch (e) {
         print(e);

@@ -152,7 +152,7 @@ class _ListCardState extends State<ListCard> {
     String? refreshToken = userProvider.refreshToken;
     try {
       final allStudents =
-          await StdInfo().fetchStd(context, accessToken, refreshToken);
+          await StdInfo().fetchStd(context, accessToken!, refreshToken!);
       setState(() {
         _students = allStudents;
         _isLoading = false;
@@ -216,14 +216,12 @@ class _ListCardState extends State<ListCard> {
           allergicThings,
           allergicDrugs,
           allergicCondition,
-          accessToken,
-          refreshToken);
+          accessToken!,
+          refreshToken!);
 
-      // Handle success, e.g., parse response if needed
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Save successful!')));
-
-      // Optionally clear the form fields
+      _fetchAllstudents();
       _clearForm();
     } catch (e) {
       print(e);
@@ -478,7 +476,7 @@ class _ListCardState extends State<ListCard> {
 
     if (confirmed == true) {
       try {
-        await StdInfo().delstd(context, stdid, accessToken, refreshToken);
+        await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
         _fetchAllstudents();
       } catch (e) {
         print('Error deleting student: $e');
@@ -749,8 +747,8 @@ class _ListCardState extends State<ListCard> {
           allergicThings,
           allergicDrugs,
           allergicCondition,
-          accessToken,
-          refreshToken);
+          accessToken!,
+          refreshToken!);
       _fetchAllstudents();
       Navigator.of(context).pop();
     } catch (e) {
@@ -1195,7 +1193,6 @@ class _ListCardState extends State<ListCard> {
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   post_std(); // Call your function to handle student addition
-                  _fetchAllstudents(); // Refresh the student list
                   Navigator.of(context).pop(); // Close dialog
                 }
               },

@@ -188,8 +188,8 @@ class _StdFormState extends State<StdForm> {
           allergicThings,
           allergicDrugs,
           allergicCondition,
-          accessToken,
-          refreshToken);
+          accessToken!,
+          refreshToken!);
 
       // Handle success, e.g., parse response if needed
       ScaffoldMessenger.of(context)

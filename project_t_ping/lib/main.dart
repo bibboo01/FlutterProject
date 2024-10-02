@@ -11,7 +11,9 @@ import 'package:project_t_ping/views/userpage/home.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  ChangeNotifierProvider(create: (context) => UserProvider(), child: MyApp());
+  runApp(
+    ChangeNotifierProvider(create: (context) => UserProvider(), child: MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {

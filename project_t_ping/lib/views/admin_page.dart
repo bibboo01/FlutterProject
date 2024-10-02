@@ -25,8 +25,8 @@ class _AdminPageState extends State<AdminPage> {
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
     try {
-      final allUser =
-          await Usercontroller().fetchUser(context, accessToken, refreshToken);
+      final allUser = await Usercontroller()
+          .fetchUser(context, accessToken!, refreshToken!);
       setState(() {
         _user = allUser;
         _isLoading = false;
@@ -43,6 +43,10 @@ class _AdminPageState extends State<AdminPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
+
+    if (accessToken!.isEmpty) {
+      print('Access token is null or empty');
+    }
     // Show confirmation dialog before deleting
     final confirmed = await showDialog<bool>(
       context: context,
@@ -70,7 +74,7 @@ class _AdminPageState extends State<AdminPage> {
 
     if (confirmed == true) {
       try {
-        await Usercontroller().delUser(context, id, accessToken, refreshToken);
+        await Usercontroller().delUser(context, id, accessToken, refreshToken!);
         _fetchAlluser();
       } catch (e) {
         print(e);
@@ -115,7 +119,7 @@ class _AdminPageState extends State<AdminPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            Text('This is Student List'),
+            Text('This is User List'),
             const SizedBox(height: 20),
             Expanded(
               child: _isLoading

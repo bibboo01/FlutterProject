@@ -307,7 +307,12 @@ exports.del_std = async (req, res) => {
         const deldated1 = await std_info_.findOneAndDelete(std_id);
         const deldated2 = await std_sch.findOneAndDelete(std_id);
         const deldated3 = await std_details.findOneAndDelete(std_id);
-        res.json({ deldated1, deldated2, deldated3 }).send("Delete Successful");
+        return res.json({
+            message: "Delete Successful",
+            deldated1,
+            deldated2,
+            deldated3
+        });
     } catch (err) {
         res.status(500).json(err)
     }

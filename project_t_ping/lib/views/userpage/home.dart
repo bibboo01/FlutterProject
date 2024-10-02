@@ -9,21 +9,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _homePageState extends State<HomePage> {
+  Future<void> _refreshData() async {
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      // Update your state if needed
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const ChartTooltip(),
-              const DonutChart(),
-              ListCard(),
-            ],
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const ChartTooltip(),
+                const DonutChart(),
+                ListCard(),
+              ],
+            ),
           ),
         ),
       ),

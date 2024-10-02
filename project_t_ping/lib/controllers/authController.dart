@@ -43,20 +43,19 @@ class AuthService {
     print(response.statusCode);
   }
 
-  Future<String?> refresh(BuildContext context, String RefreshToken) async {
-    final response = await http.post(
-      Uri.parse("$apiURL/auth/register"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "token": RefreshToken,
-      }),
-    );
+  Future<String?> refreshToken(
+      BuildContext context, String refreshtoken) async {
+    final response = await http.post(Uri.parse('$apiURL/auth/refresh'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"token": refreshtoken}));
     print(response.statusCode);
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       String newAccessToken = data['accessToken'];
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
+
       userProvider.updateAccessToken(newAccessToken);
       return newAccessToken;
     } else {

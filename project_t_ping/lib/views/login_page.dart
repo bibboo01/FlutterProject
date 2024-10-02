@@ -21,38 +21,42 @@ class _LoginPageState extends State<LoginPage> {
 
       try {
         final User? userModel = await AuthService().login(username, password);
-        final int? role = userModel?.user.role;
+        final int? role = userModel!.user.role;
 
         Provider.of<UserProvider>(context, listen: false)
-            .saveUser(userModel!.user, userModel.token);
-        if (role == 1) {
-          Navigator.pushReplacementNamed(context, '/admin');
-        } else if (role == 2) {
-          Navigator.pushReplacementNamed(context, '/home');
-        } else if (role == 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Waiting for confirmation from the system')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Unexpected user role')),
-          );
-        }
+            .saveUser(userModel.user, userModel.token);
 
-        if (role == 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login Successful')),
-          );
-        }
+        checkRole(role!);
 
         _usernameController.clear();
         _passwordController.clear();
       } catch (e) {
-        print(e); // Consider using a more sophisticated logging mechanism
+        print(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to Login')),
         );
       }
+    }
+  }
+
+  Future<void> checkRole(int role) async {
+    if (role == 1) {
+      Navigator.pushReplacementNamed(context, '/admin');
+    } else if (role == 2) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else if (role == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Waiting for confirmation from the system')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unexpected user role')),
+      );
+    }
+    if (role == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login Successful')),
+      );
     }
   }
 

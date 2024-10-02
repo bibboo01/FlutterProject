@@ -48,7 +48,7 @@ class _DonutChartState extends State<DonutChart> {
     String? refreshToken = userProvider.refreshToken;
     try {
       final allStudents =
-          await StdInfo().fetchStd(context, accessToken, refreshToken);
+          await StdInfo().fetchStd(context, accessToken!, refreshToken!);
       setState(() {
         _students = allStudents;
         _isLoading = false;
@@ -203,7 +203,7 @@ class _DonutChartState extends State<DonutChart> {
             SizedBox(width: 8),
             Text(
               '${_Majors[entry.key]}: ${entry.value}', // Major name and count
-              style: TextStyle(fontSize: 8),
+              style: TextStyle(fontSize: 12),
             ),
           ],
         );

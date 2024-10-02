@@ -37,7 +37,7 @@ class _ChartTooltipState extends State<ChartTooltip> {
     String? refreshToken = userProvider.refreshToken;
     try {
       final allStudents =
-          await StdInfo().fetchStd(context, accessToken, refreshToken);
+          await StdInfo().fetchStd(context, accessToken!, refreshToken!);
       setState(() {
         _students = allStudents;
         _isLoading = false;

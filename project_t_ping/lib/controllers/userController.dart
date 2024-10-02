@@ -25,17 +25,21 @@ class Usercontroller {
       return jsonResponse
           .map((alluser) => userModel.fromJson(alluser))
           .toList();
-    } else if (response.statusCode == 403) {
-      print('Logging out');
-      Logout(context);
-      return [];
     } else if (response.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      return fetchUser(context, accessToken, refreshToken);
-    } else {
-      print('Failed to fetch users: ${response.reasonPhrase}');
-      throw Exception('Failed to load users');
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
+        return await fetchUser(context, accessToken, refreshToken);
+      } else {
+        print('logging out.');
+        Logout(context);
+      }
     }
+    throw Exception('Failed to fetch user data: ${response.statusCode}');
   }
 
   Future<userModel> getUser(BuildContext context, String id, String accessToken,
@@ -47,17 +51,25 @@ class Usercontroller {
         'Authorization': 'Bearer $accessToken',
       },
     );
+
     if (response.statusCode == 200) {
       print('Fetch User successfully');
-    } else if (response.statusCode == 403) {
-      print('logging out');
-      Logout(context);
+      return userModel.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      getUser(context, id, accessToken, refreshToken);
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
+        return await getUser(context, id, newAccessToken, refreshToken);
+      } else {
+        print('logging out.');
+        Logout(context);
+      }
     }
-
-    return userModel.fromJson(jsonDecode(response.body));
+    throw Exception('Failed to fetch user data: ${response.statusCode}');
   }
 
   Future<void> updateUser(BuildContext context, String id, String username,
@@ -77,12 +89,20 @@ class Usercontroller {
     print('Response status: ${response.statusCode}');
     if (response.statusCode == 200) {
       print('User updated successfully');
-    } else if (response.statusCode == 403) {
-      print('logging out');
-      Logout(context);
     } else if (response.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      updateUser(context, id, username, email, role, accessToken, refreshToken);
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
+        return await updateUser(
+            context, id, username, email, role, accessToken, refreshToken);
+      } else {
+        print('logging out.');
+        Logout(context);
+      }
     }
   }
 
@@ -96,14 +116,22 @@ class Usercontroller {
       },
     );
     print(response.statusCode);
+
     if (response.statusCode == 200) {
       print('User Delete successfully');
-    } else if (response.statusCode == 403) {
-      print('logging out');
-      Logout(context);
     } else if (response.statusCode == 401) {
-      await AuthService().refresh(context, refreshToken);
-      delUser(context, id, accessToken, refreshToken);
+      print('logging out.');
+      Logout(context);
+      throw Exception('Token denied');
+    } else if (response.statusCode == 403) {
+      final newAccessToken =
+          await AuthService().refreshToken(context, refreshToken);
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
+        return await delUser(context, id, newAccessToken, refreshToken);
+      } else {
+        print('logging out.');
+        Logout(context);
+      }
     }
   }
 

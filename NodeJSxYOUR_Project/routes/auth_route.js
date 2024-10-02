@@ -29,7 +29,7 @@ const {
 
 route.get('/read/users',authenticateToken,getusers);
 route.get('/read/user/:id',authenticateToken,getuser);
-route.post('/add/user',postuser);
+route.post('/add/user',authenticateToken,postuser);
 route.put('/edit/user/:id',authenticateToken,putuser);
 route.delete('/del/:id',authenticateToken,deluser);
 
