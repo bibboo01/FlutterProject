@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project_t_ping/controllers/std_Controller.dart';
-import 'package:project_t_ping/views/provider/userprovider.dart';
-import 'package:provider/provider.dart';
+
+enum InputType { text, number, phone }
 
 class StdForm extends StatefulWidget {
   const StdForm({super.key});
@@ -161,13 +162,8 @@ class _StdFormState extends State<StdForm> {
     final int prefix = _selectedPrefix ?? 0;
     final int Province = _selectedProvince ?? 0;
 
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    String? accessToken = userProvider.accessToken;
-    String? refreshToken = userProvider.refreshToken;
-
     try {
-      await StdInfo().add_info(
-          context,
+      final result = await StdInfo().addstudent(
           stdId,
           prefix,
           stdFname,
@@ -187,22 +183,51 @@ class _StdFormState extends State<StdForm> {
           stdParentRela,
           allergicThings,
           allergicDrugs,
-          allergicCondition,
-          accessToken!,
-          refreshToken!);
-
-      // Handle success, e.g., parse response if needed
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Save successful!')));
-
-      // Optionally clear the form fields
-      _clearForm();
+          allergicCondition);
+      if (result == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Save successful!')),
+        );
+        Navigator.pushNamed(context, '/');
+        _clearForm();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result)),
+        );
+      }
     } catch (e) {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Save failed. Please try again.')),
       );
     }
+  }
+
+  void _showSaveConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Save'),
+          content: Text('Do you want to save the changes?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // User clicked Cancel
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                post_std();
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
 // Method to clear form fields
@@ -231,6 +256,8 @@ class _StdFormState extends State<StdForm> {
     });
   }
 
+  void checkstudentId(String studentId) {}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,14 +273,14 @@ class _StdFormState extends State<StdForm> {
               // Student ID
               _buildTextField(
                 _stdIdController,
-                'รหัสนิสิต',
+                'รหัสนิสิต*',
                 'กรุณากรอกรหัสนิสิต',
-                TextInputType.number,
+                InputType.number,
                 maxLength: 10,
               ),
               // Prefix
               _buildChoiceChipField(
-                'คำนำหน้า',
+                'คำนำหน้า*',
                 _prefix,
                 _selectedPrefix,
                 (value) {
@@ -265,35 +292,38 @@ class _StdFormState extends State<StdForm> {
               // First Name
               _buildTextField(
                 _stdFnameController,
-                'ชื่อ',
+                'ชื่อ*',
                 'กรุณากรอกชื่อ',
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // Last Name
               _buildTextField(
                 _stdLnameController,
-                'นามสกุล',
+                'นามสกุล*',
                 'กรุณากรอกนามสกุล',
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // Nickname
               _buildTextField(
                 _stdNicknameController,
-                'ชื่อเล่น',
+                'ชื่อเล่น*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 20,
               ),
               // Telephone
               _buildTextField(
                 _stdTelController,
-                'เบอร์โทรศัพท์',
+                'เบอร์โทรศัพท์*',
                 'กรุณากรอกเบอร์โทรศัพท์',
-                TextInputType.phone,
+                InputType.phone,
                 maxLength: 10,
               ),
               // Religion
-              _buildChoiceChipField(
-                'ศาสนา',
+              _buildDropdownForForm(
+                'ศาสนา*',
                 _religions,
                 _selectedReligion,
                 (value) {
@@ -303,8 +333,8 @@ class _StdFormState extends State<StdForm> {
                 },
               ),
               // Major
-              _buildChoiceChipField(
-                'วิชาเอก',
+              _buildDropdownForForm(
+                'วิชาเอก*',
                 _majors,
                 _selectedMajor,
                 (value) {
@@ -316,9 +346,10 @@ class _StdFormState extends State<StdForm> {
               // School Name
               _buildTextField(
                 _schNameController,
-                'ชื่อโรงเรียนที่สำเร็จการศึกษา',
+                'ชื่อโรงเรียนที่สำเร็จการศึกษา*',
                 'กรุณากรอกชื่อโรงเรียนรที่สำเร็จการศึกษา',
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // School Province
               _buildProvinceDropdown(
@@ -332,81 +363,88 @@ class _StdFormState extends State<StdForm> {
               // Father's Name
               _buildTextField(
                 _stdFatherNameController,
-                'ชื่อบิดา',
+                'ชื่อบิดา*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // Father's Telephone
               _buildTextField(
                 _stdFatherTelController,
-                'เบอร์โทรศัพท์',
+                'เบอร์โทรศัพท์*',
                 null,
-                TextInputType.phone,
+                InputType.phone,
                 maxLength: 10,
               ),
               // Mother's Name
               _buildTextField(
                 _stdMotherNameController,
-                'ชื่อมารดา',
+                'ชื่อมารดา*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // Mother's Telephone
               _buildTextField(
                 _stdMotherTelController,
-                'เบอร์โทรศัพท์',
+                'เบอร์โทรศัพท์*',
                 null,
-                TextInputType.phone,
+                InputType.phone,
                 maxLength: 10,
               ),
               // Parent's Name
               _buildTextField(
                 _stdParentNameController,
-                'ชื่อผู้ปกครอง',
+                'ชื่อผู้ปกครอง*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 50,
               ),
               // Parent's Telephone
               _buildTextField(
                 _stdParentTelController,
-                'เบอร์โทรศัพท์',
+                'เบอร์โทรศัพท์*',
                 null,
-                TextInputType.phone,
+                InputType.phone,
                 maxLength: 10,
               ),
               // Parent's Relationship
               _buildTextField(
                 _stdParentRelaController,
-                'ความสัมพันธ์ของนิสิต',
+                'ความสัมพันธ์ของนิสิต*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 30,
               ),
               // Allergic to Things
               _buildTextField(
                 _allergicThingsController,
-                'อาหารที่แพ้',
+                'อาหารที่แพ้*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 100,
               ),
               // Allergic to Drugs
               _buildTextField(
                 _allergicDrugsController,
-                'ยาที่แพ้',
+                'ยาที่แพ้*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 100,
               ),
               // Allergic Condition
               _buildTextField(
                 _allergicConditionController,
-                'ประวัติการแพทย์',
+                'ประวัติการแพทย์*',
                 null,
-                TextInputType.text,
+                InputType.text,
+                maxLength: 100,
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
-                    post_std();
+                    _showSaveConfirmationDialog(context);
                   }
                 },
                 child: Text('Submit'),
@@ -418,13 +456,12 @@ class _StdFormState extends State<StdForm> {
     );
   }
 
-  // ฟังก์ชันสำหรับสร้าง TextField
   Widget _buildTextField(
     TextEditingController controller,
     String label,
     String? validationMessage,
-    TextInputType inputType, {
-    int? maxLength, // New optional parameter
+    InputType inputType, {
+    int? maxLength,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -434,8 +471,20 @@ class _StdFormState extends State<StdForm> {
           labelText: label,
           counterText: '', // Hide the character counter
         ),
-        keyboardType: inputType,
+        keyboardType: inputType == InputType.number
+            ? TextInputType.number
+            : TextInputType.text,
         maxLength: maxLength, // Apply maxLength
+        inputFormatters: inputType == InputType.number
+            ? [FilteringTextInputFormatter.digitsOnly] // Allow only digits
+            : inputType == InputType.phone
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d+()-\s]'))
+                  ] // Allow phone formats
+                : [
+                    FilteringTextInputFormatter.allow(RegExp(
+                        '[a-zA-Zก-ฮ\\u0E30-\\u0E4F \\- ]+')) // Allow only letters
+                  ],
         validator: (value) {
           if (validationMessage != null && (value == null || value.isEmpty)) {
             return validationMessage;
@@ -446,7 +495,6 @@ class _StdFormState extends State<StdForm> {
     );
   }
 
-  // ฟังก์ชันสำหรับสร้าง ChoiceChip
   Widget _buildChoiceChipField<T>(String label, Map<T, String> options,
       T? selectedValue, ValueChanged<T?> onChanged) {
     return Padding(
@@ -473,6 +521,28 @@ class _StdFormState extends State<StdForm> {
     );
   }
 
+  Widget _buildDropdownForForm<T>(String label, Map<T, String> options,
+      T? selectedValue, ValueChanged<T?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: DropdownButtonFormField<T>(
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+        ),
+        value: selectedValue,
+        hint: Text('กรุณาเลือก $label'), // "Please select $label"
+        items: options.entries
+            .map((entry) => DropdownMenuItem<T>(
+                  value: entry.key,
+                  child: Text(entry.value),
+                ))
+            .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
   DropdownButtonFormField<int> _buildProvinceDropdown(
       int? selectedValue, Function(int?)? onChanged) {
     return DropdownButtonFormField<int>(
@@ -481,7 +551,7 @@ class _StdFormState extends State<StdForm> {
         border: OutlineInputBorder(),
       ),
       value: selectedValue,
-      hint: Text('กรุณาเลือกจังหวัด'), // "Please select a province"
+      hint: Text('กรุณาเลือกจังหวัด*'), // "Please select a province"
       items: _thaiProvinces.entries
           .map((entry) => DropdownMenuItem<int>(
                 value: entry.key,

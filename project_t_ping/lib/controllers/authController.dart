@@ -53,9 +53,7 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       String newAccessToken = data['accessToken'];
-
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-
       userProvider.updateAccessToken(newAccessToken);
       return newAccessToken;
     } else {

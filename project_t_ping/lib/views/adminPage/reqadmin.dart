@@ -6,12 +6,14 @@ import 'package:project_t_ping/views/chart/second.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
 
-class HomePage extends StatefulWidget {
+class Reqadmin extends StatefulWidget {
+  const Reqadmin({super.key});
+
   @override
-  _HomePageState createState() => _HomePageState();
+  State<Reqadmin> createState() => _ReqadminState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _ReqadminState extends State<Reqadmin> {
   Future<void> _refreshData() async {
     await Future.delayed(Duration(seconds: 2));
     setState(() {
@@ -19,22 +21,15 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _logout(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.onLogout();
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-  }
-
-  String _setRole(int? num) {
-    switch (num) {
-      case 0:
-        return 'Waiting';
-      case 1:
-        return 'Admin';
-      case 2:
-        return 'User';
-      default:
-        return 'Unknown Role';
+  String setrole(int? num) {
+    if (num == 0) {
+      return 'Waiting';
+    } else if (num == 1) {
+      return 'Admin';
+    } else if (num == 2) {
+      return 'User';
+    } else {
+      return 'Unknown Role';
     }
   }
 
@@ -43,22 +38,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
-        automaticallyImplyLeading: false,
-        actions: [
-          // Use a Builder to create a new context that has a Scaffold ancestor
-          Builder(
-            builder: (context) {
-              return IconButton(
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: Icon(Icons.menu),
-              );
-            },
-          ),
-        ],
       ),
-      drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: const SingleChildScrollView(
@@ -78,8 +58,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void Logout(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.onLogout();
+    Navigator.pushNamed(context, '/');
+  }
+
   Widget _buildDrawer() {
-    final userProvider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? name = userProvider.user;
     String? email = userProvider.email;
     int? role = userProvider.role;
@@ -113,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Role: ${_setRole(role)}',
+                  'Role: ${setrole(role)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -126,10 +112,10 @@ class _HomePageState extends State<HomePage> {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
             onTap: () {
-              _logout(context);
+              Logout(context);
             },
           ),
-          Divider(),
+          Divider(), // Optional divider for better separation
           ListTile(
             title: Text(
               'Contact Us',
@@ -142,8 +128,10 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\nมหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\nจ.พัทลุง 93210',
-              style: TextStyle(fontSize: 12),
+              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\n มหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\n จ.พัทลุง 93210',
+              style: TextStyle(
+                fontSize: 12,
+              ),
             ),
           ),
         ],

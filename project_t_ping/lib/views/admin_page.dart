@@ -90,7 +90,7 @@ class _AdminPageState extends State<AdminPage> {
     } else if (num == 2) {
       return 'User';
     } else {
-      return 'Unknown Role'; // Fallback for unexpected values
+      return 'Unknown Role';
     }
   }
 
@@ -107,14 +107,17 @@ class _AdminPageState extends State<AdminPage> {
               Navigator.pushNamed(context, '/adduserPage');
             },
           ),
-          IconButton(
-            icon: Icon(Icons.post_add), // Use any appropriate icon
-            onPressed: () {
-              Navigator.pushNamed(context, '/Student');
-            },
-          ),
+          Builder(builder: (context) {
+            return IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          }),
         ],
       ),
+      drawer: _buildDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -123,20 +126,17 @@ class _AdminPageState extends State<AdminPage> {
             const SizedBox(height: 20),
             Expanded(
               child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator()) // Loading indicator
+                  ? Center(child: CircularProgressIndicator())
                   : _errorMessage != null
-                      ? Center(
-                          child: Text('Error: $_errorMessage')) // Error message
+                      ? Center(child: Text('Error: $_errorMessage'))
                       : ListView.builder(
                           itemCount: _user.length,
                           itemBuilder: (context, index) {
                             final fetchuser = _user[index];
                             return ListTile(
-                              title: Text(
-                                  fetchuser.username), // Handle null username
+                              title: Text(fetchuser.username),
                               subtitle: Text(
-                                "Role: ${setrole(fetchuser.role)}", // Handle null role
+                                "Role: ${setrole(fetchuser.role)}",
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -165,15 +165,103 @@ class _AdminPageState extends State<AdminPage> {
                           },
                         ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Logout'),
-              onPressed: () {
-                Navigator.pushNamed(context, '/');
-              },
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  void Logout(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.onLogout();
+    Navigator.pushNamed(context, '/');
+  }
+
+  Widget _buildDrawer() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String? name = userProvider.user;
+    String? email = userProvider.email;
+    int? role = userProvider.role;
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome $name',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Email: $email',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Role: ${setrole(role)}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.home),
+            title: Text('Student Form'),
+            onTap: () {
+              Navigator.pushNamed(context, '/Student');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text('Report'),
+            onTap: () {
+              Navigator.pushNamed(context, '/reqadmin');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Logout'),
+            onTap: () {
+              Logout(context);
+            },
+          ),
+          Divider(), // Optional divider for better separation
+          ListTile(
+            title: Text(
+              'Contact Us',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\n มหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\n จ.พัทลุง 93210',
+              style: TextStyle(
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

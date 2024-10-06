@@ -46,6 +46,9 @@ class _ListCardState extends State<ListCard> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  int _currentPage = 0; // Track the current page
+  final int _itemsPerPage = 6; // Items per page
+
   // ตัวแปรเก็บค่าที่เลือก
 
   final Map<int, String> _Majors = {
@@ -155,6 +158,7 @@ class _ListCardState extends State<ListCard> {
           await StdInfo().fetchStd(context, accessToken!, refreshToken!);
       setState(() {
         _students = allStudents;
+        filteredStudents = List.from(_students);
         _isLoading = false;
       });
     } catch (e) {
@@ -194,7 +198,7 @@ class _ListCardState extends State<ListCard> {
     String? refreshToken = userProvider.refreshToken;
 
     try {
-      await StdInfo().add_info(
+      final result = await StdInfo().add_info(
           context,
           stdId,
           prefix,
@@ -218,11 +222,17 @@ class _ListCardState extends State<ListCard> {
           allergicCondition,
           accessToken!,
           refreshToken!);
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Save successful!')));
-      _fetchAllstudents();
-      _clearForm();
+      if (result == null) {
+        Navigator.of(context).pop();
+        _showSuccessDialog();
+        _fetchAllstudents();
+        _clearForm();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    result)) // Display the error message from the addstudent function
+            );
+      }
     } catch (e) {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -274,174 +284,25 @@ class _ListCardState extends State<ListCard> {
       }).toList();
       setState(() {
         filteredStudents = filteredList;
+        _currentPage = 0;
       });
     }
   }
 
   String? _prefix(int prefix) {
-    if (prefix == 0) {
-      return "นาย";
-    } else if (prefix == 1) {
-      return "นางสาว";
-    }
-    return null;
+    return _Prefix[prefix];
   }
 
-  String? _religion(int _religion) {
-    if (_religion == 0) {
-      return "คริสต์";
-    } else if (_religion == 1) {
-      return "อิสลาม";
-    } else if (_religion == 2) {
-      return "พุทธ";
-    } else if (_religion == 3) {
-      return "ฮินดู";
-    }
-    return null;
+  String? _religion(int religion) {
+    return _Religions[religion];
   }
 
   String? _major(int major) {
-    if (major == 0) {
-      return "วท.บ.เคมี";
-    } else if (major == 1) {
-      return "วท.บ.วิทยาศาสตร์สิ่งแวดล้อม";
-    } else if (major == 2) {
-      return "วท.บ.คณิตศาสตร์และการจัดการข้อมูล";
-    } else if (major == 3) {
-      return "วท.บ.วิทยาการคอมพิวเตอร์และสารสนเทศ";
-    } else if (major == 4) {
-      return "วท.บ.ชีววิทยาศาสตร์";
-    } else if (major == 5) {
-      return "วท.บ.คณิตศาสตร์และการจัดการข้อมูล ร่วมกับ วท.บ.วิทยาการคอมพิวเตอร์และสารสนเทศ";
-    }
-    return null;
+    return _Majors[major];
   }
 
   String? getProvinceName(int provinceId) {
-    if (provinceId == 1) {
-      return 'กรุงเทพมหานคร';
-    } else if (provinceId == 2) {
-      return 'กระบี่';
-    } else if (provinceId == 3) {
-      return 'กาญจนบุรี';
-    } else if (provinceId == 4) {
-      return 'บุรีรัมย์';
-    } else if (provinceId == 5) {
-      return 'ชัยภูมิ';
-    } else if (provinceId == 6) {
-      return 'ชลบุรี';
-    } else if (provinceId == 7) {
-      return 'เชียงใหม่';
-    } else if (provinceId == 8) {
-      return 'เชียงราย';
-    } else if (provinceId == 9) {
-      return 'ตรัง';
-    } else if (provinceId == 10) {
-      return 'ตราด';
-    } else if (provinceId == 11) {
-      return 'ตาก';
-    } else if (provinceId == 12) {
-      return 'นครนายก';
-    } else if (provinceId == 13) {
-      return 'นครปฐม';
-    } else if (provinceId == 14) {
-      return 'นครราชสีมา';
-    } else if (provinceId == 15) {
-      return 'นครศรีธรรมราช';
-    } else if (provinceId == 16) {
-      return 'นนทบุรี';
-    } else if (provinceId == 17) {
-      return 'บึงกาฬ';
-    } else if (provinceId == 18) {
-      return 'ปทุมธานี';
-    } else if (provinceId == 19) {
-      return 'ประจวบคีรีขันธ์';
-    } else if (provinceId == 20) {
-      return 'ปัตตานี';
-    } else if (provinceId == 21) {
-      return 'พะเยา';
-    } else if (provinceId == 22) {
-      return 'พังงา';
-    } else if (provinceId == 23) {
-      return 'พัทลุง';
-    } else if (provinceId == 24) {
-      return 'ภูเก็ต';
-    } else if (provinceId == 25) {
-      return 'มหาสารคาม';
-    } else if (provinceId == 26) {
-      return 'มุกดาหาร';
-    } else if (provinceId == 27) {
-      return 'ยโสธร';
-    } else if (provinceId == 28) {
-      return 'ระนอง';
-    } else if (provinceId == 29) {
-      return 'ระยอง';
-    } else if (provinceId == 30) {
-      return 'ราชบุรี';
-    } else if (provinceId == 31) {
-      return 'ลพบุรี';
-    } else if (provinceId == 32) {
-      return 'ลำปาง';
-    } else if (provinceId == 33) {
-      return 'ลำพูน';
-    } else if (provinceId == 34) {
-      return 'เลย';
-    } else if (provinceId == 35) {
-      return 'ศรีสะเกษ';
-    } else if (provinceId == 36) {
-      return 'สกลนคร';
-    } else if (provinceId == 37) {
-      return 'สงขลา';
-    } else if (provinceId == 38) {
-      return 'สมุทรปราการ';
-    } else if (provinceId == 39) {
-      return 'สมุทรสาคร';
-    } else if (provinceId == 40) {
-      return 'สระบุรี';
-    } else if (provinceId == 41) {
-      return 'สิงห์บุรี';
-    } else if (provinceId == 42) {
-      return 'สุโขทัย';
-    } else if (provinceId == 43) {
-      return 'สุพรรณบุรี';
-    } else if (provinceId == 44) {
-      return 'สุราษฎร์ธานี';
-    } else if (provinceId == 45) {
-      return 'สุรินทร์';
-    } else if (provinceId == 46) {
-      return 'อำนาจเจริญ';
-    } else if (provinceId == 47) {
-      return 'อุดรธานี';
-    } else if (provinceId == 48) {
-      return 'อุตรดิตถ์';
-    } else if (provinceId == 49) {
-      return 'อุบลราชธานี';
-    } else if (provinceId == 50) {
-      return 'นครสวรรค์';
-    } else if (provinceId == 51) {
-      return 'เพชรบูรณ์';
-    } else if (provinceId == 52) {
-      return 'พิจิตร';
-    } else if (provinceId == 53) {
-      return 'เพชรบุรี';
-    } else if (provinceId == 54) {
-      return 'แพร่';
-    } else if (provinceId == 55) {
-      return 'แม่ฮ่องสอน';
-    } else if (provinceId == 56) {
-      return 'น่าน';
-    } else if (provinceId == 57) {
-      return 'ขอนแก่น';
-    } else if (provinceId == 58) {
-      return 'กาฬสินธุ์';
-    } else if (provinceId == 59) {
-      return 'หนองคาย';
-    } else if (provinceId == 60) {
-      return 'บึงกาฬ';
-    } else if (provinceId == 61) {
-      return 'นครพนม';
-    }
-    return null;
+    return _ThaiProvinces[provinceId];
   }
 
   @override
@@ -478,6 +339,7 @@ class _ListCardState extends State<ListCard> {
       try {
         await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
         _fetchAllstudents();
+        Navigator.of(context).pop();
       } catch (e) {
         print('Error deleting student: $e');
       }
@@ -775,7 +637,7 @@ class _ListCardState extends State<ListCard> {
                 child: Row(
                   children: [
                     TextButton(
-                        child: Text('X'),
+                        child: Icon(Icons.clear),
                         onPressed: () {
                           Navigator.of(context).pop(); // Close the dialog
                         })
@@ -861,6 +723,15 @@ class _ListCardState extends State<ListCard> {
 
   @override
   Widget build(BuildContext context) {
+    filteredStudents.sort((a, b) => a.stdInfo.stdId.compareTo(b.stdInfo.stdId));
+
+    final int totalPages = (filteredStudents.length / _itemsPerPage).ceil();
+    // Get the items for the current page
+    final List<studentInfo> currentPageStudents = filteredStudents
+        .skip(_currentPage * _itemsPerPage)
+        .take(_itemsPerPage)
+        .toList();
+
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -875,13 +746,13 @@ class _ListCardState extends State<ListCard> {
                 children: [
                   Text(
                     'รายชื่อนิสิต',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                       onPressed: () {
                         _showAddStudentDialog();
                       },
-                      icon: Icon(Icons.add)),
+                      icon: Icon(Icons.add_box)),
                 ],
               ),
               SizedBox(height: 16), // Add spacing
@@ -898,14 +769,13 @@ class _ListCardState extends State<ListCard> {
                   ? Center(child: CircularProgressIndicator())
                   : _errorMessage != null
                       ? Center(child: Text(_errorMessage!))
-                      : filteredStudents.isEmpty // Check for filtered list
+                      : currentPageStudents.isEmpty // Check for filtered list
                           ? Center(
                               child: studentListCard(
                               searchController: _searchController,
                               isLoading: _isLoading,
                               errorMessage: _errorMessage,
-                              students:
-                                  _students, // or _students based on your logic
+                              students: _students,
                               onStudentTap: _detailStudent,
                               onSearchChanged: _filterStudents,
                             ))
@@ -913,25 +783,48 @@ class _ListCardState extends State<ListCard> {
                               shrinkWrap: true,
                               physics:
                                   NeverScrollableScrollPhysics(), // Prevent scrolling
-                              itemCount:
-                                  filteredStudents.length, // Use filtered list
+                              itemCount: currentPageStudents
+                                  .length, // Use filtered list
                               itemBuilder: (context, index) {
-                                final student = filteredStudents[index];
+                                final student = currentPageStudents[index];
                                 return ListTile(
-                                  title: Text(
-                                    "ชื่อ ${student.stdInfo.stdFname} ${student.stdInfo.stdLname}",
-                                  ),
-                                  subtitle: Text(
-                                      'รหัสนิสิต: ${student.stdInfo.stdId}'),
-                                  trailing: IconButton(
-                                    icon: Icon(Icons.details_outlined),
-                                    onPressed: () {
-                                      _detailStudent(student);
-                                    },
-                                  ),
-                                );
+                                    title: Text(
+                                      "ชื่อ ${student.stdInfo.stdFname} ${student.stdInfo.stdLname}",
+                                    ),
+                                    subtitle: Text(
+                                        'รหัสนิสิต: ${student.stdInfo.stdId}'),
+                                    trailing: IconButton(
+                                        onPressed: () {
+                                          _detailStudent(student);
+                                        },
+                                        icon: Icon(Icons.article)));
                               },
                             ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: _currentPage > 0
+                        ? () {
+                            setState(() {
+                              _currentPage--;
+                            });
+                          }
+                        : null,
+                    child: Text('Previous'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _currentPage < totalPages - 1
+                        ? () {
+                            setState(() {
+                              _currentPage++;
+                            });
+                          }
+                        : null,
+                    child: Text('Next'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -944,6 +837,7 @@ class _ListCardState extends State<ListCard> {
     required String labelText,
     TextInputType keyboardType = TextInputType.text,
     bool readOnly = false,
+    int? maxLength,
   }) {
     return TextField(
       controller: controller,
@@ -953,6 +847,7 @@ class _ListCardState extends State<ListCard> {
       ),
       keyboardType: keyboardType,
       readOnly: readOnly,
+      maxLength: maxLength,
     );
   }
 
@@ -1012,7 +907,7 @@ class _ListCardState extends State<ListCard> {
                                 subtitle:
                                     Text('รหัสนิสิต: ${student.stdInfo.stdId}'),
                                 trailing: IconButton(
-                                  icon: Icon(Icons.details_outlined),
+                                  icon: Icon(Icons.article),
                                   onPressed: () {
                                     onStudentTap(student);
                                   },
@@ -1023,6 +918,25 @@ class _ListCardState extends State<ListCard> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Save Successful'),
+          actions: <Widget>[
+            TextButton(
+              child: Center(child: Text('OK')),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1039,6 +953,7 @@ class _ListCardState extends State<ListCard> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Student ID
                   _buildTextField(
                     _stdIdController,
                     'รหัสนิสิต',
@@ -1046,6 +961,7 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.number,
                     maxLength: 10,
                   ),
+                  // Prefix
                   _buildDropdownForForm(
                     'คำนำหน้า',
                     _Prefix,
@@ -1056,24 +972,31 @@ class _ListCardState extends State<ListCard> {
                       });
                     },
                   ),
+                  // First Name
                   _buildTextField(
                     _stdFnameController,
                     'ชื่อ',
                     'กรุณากรอกชื่อ',
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // Last Name
                   _buildTextField(
                     _stdLnameController,
                     'นามสกุล',
                     'กรุณากรอกนามสกุล',
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // Nickname
                   _buildTextField(
                     _stdNicknameController,
                     'ชื่อเล่น',
                     null,
                     TextInputType.text,
+                    maxLength: 20,
                   ),
+                  // Telephone
                   _buildTextField(
                     _stdTelController,
                     'เบอร์โทรศัพท์',
@@ -1081,6 +1004,7 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.phone,
                     maxLength: 10,
                   ),
+                  // Religion
                   _buildDropdownForForm(
                     'ศาสนา',
                     _Religions,
@@ -1091,6 +1015,7 @@ class _ListCardState extends State<ListCard> {
                       });
                     },
                   ),
+                  // Major
                   _buildDropdownForForm(
                     'วิชาเอก',
                     _Majors,
@@ -1101,12 +1026,15 @@ class _ListCardState extends State<ListCard> {
                       });
                     },
                   ),
+                  // School Name
                   _buildTextField(
                     _schNameController,
                     'ชื่อโรงเรียนที่สำเร็จการศึกษา',
-                    'กรุณากรอกชื่อโรงเรียน',
+                    'กรุณากรอกชื่อโรงเรียนรที่สำเร็จการศึกษา',
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // School Province
                   _buildProvinceDropdown(
                     _selectedProvince,
                     (value) {
@@ -1115,12 +1043,15 @@ class _ListCardState extends State<ListCard> {
                       });
                     },
                   ),
+                  // Father's Name
                   _buildTextField(
                     _stdFatherNameController,
                     'ชื่อบิดา',
                     null,
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // Father's Telephone
                   _buildTextField(
                     _stdFatherTelController,
                     'เบอร์โทรศัพท์',
@@ -1128,12 +1059,15 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.phone,
                     maxLength: 10,
                   ),
+                  // Mother's Name
                   _buildTextField(
                     _stdMotherNameController,
                     'ชื่อมารดา',
                     null,
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // Mother's Telephone
                   _buildTextField(
                     _stdMotherTelController,
                     'เบอร์โทรศัพท์',
@@ -1141,12 +1075,15 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.phone,
                     maxLength: 10,
                   ),
+                  // Parent's Name
                   _buildTextField(
                     _stdParentNameController,
                     'ชื่อผู้ปกครอง',
                     null,
                     TextInputType.text,
+                    maxLength: 50,
                   ),
+                  // Parent's Telephone
                   _buildTextField(
                     _stdParentTelController,
                     'เบอร์โทรศัพท์',
@@ -1154,29 +1091,37 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.phone,
                     maxLength: 10,
                   ),
+                  // Parent's Relationship
                   _buildTextField(
                     _stdParentRelaController,
                     'ความสัมพันธ์ของนิสิต',
                     null,
                     TextInputType.text,
+                    maxLength: 30,
                   ),
+                  // Allergic to Things
                   _buildTextField(
                     _allergicThingsController,
                     'อาหารที่แพ้',
                     null,
                     TextInputType.text,
+                    maxLength: 100,
                   ),
+                  // Allergic to Drugs
                   _buildTextField(
                     _allergicDrugsController,
                     'ยาที่แพ้',
                     null,
                     TextInputType.text,
+                    maxLength: 100,
                   ),
+                  // Allergic Condition
                   _buildTextField(
                     _allergicConditionController,
                     'ประวัติการแพทย์',
                     null,
                     TextInputType.text,
+                    maxLength: 100,
                   ),
                 ],
               ),
@@ -1193,7 +1138,6 @@ class _ListCardState extends State<ListCard> {
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   post_std(); // Call your function to handle student addition
-                  Navigator.of(context).pop(); // Close dialog
                 }
               },
               child: Text('Submit'),

@@ -18,6 +18,14 @@ class _AdminPageState extends State<AdminPage> {
   void initState() {
     super.initState();
     _fetchAlluser(); // Fetch users when the widget is initialized
+    _refreshData();
+  }
+
+  Future<void> _refreshData() async {
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      // Update your state if needed
+    });
   }
 
   void _fetchAlluser() async {

@@ -7,6 +7,7 @@ import 'package:project_t_ping/views/index.dart';
 import 'package:project_t_ping/views/login_page.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:project_t_ping/views/register_page.dart';
+import 'package:project_t_ping/views/adminPage/reqadmin.dart';
 import 'package:project_t_ping/views/userpage/home.dart';
 import 'package:provider/provider.dart';
 
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         '/editPage': (context) => const EditPage(),
         '/home': (context) => HomePage(), //after pass login
         '/adduserPage': (context) => const AddUserPage(),
+        '/reqadmin': (context) => const Reqadmin(),
       },
     );
   }

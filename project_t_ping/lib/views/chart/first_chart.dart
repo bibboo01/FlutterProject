@@ -105,8 +105,8 @@ class _ChartTooltipState extends State<ChartTooltip> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Student Enrollment',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          'สรุปยอดนิสิต\nแต่ละปีการศึกษา',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],
     );

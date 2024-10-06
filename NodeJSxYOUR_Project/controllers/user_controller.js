@@ -27,38 +27,44 @@ exports.post_std = async (req, res) => {
         allergic_condition
     } = req.body;
 
-    const data_std = new std_info_({
-        std_id,
-        prefix,
-        std_Fname,
-        std_Lname,
-        std_nickname,
-        std_religion,
-        major,
-        std_tel
-    });
-
-    const data_std_sch = new std_sch({
-        std_id,
-        sch_name,
-        sch_province
-    });
-
-    const data_std_det = new std_details({
-        std_id,
-        std_father_name,
-        std_father_tel,
-        std_mother_name,
-        std_mother_tel,
-        std_parent_name,
-        std_parent_tel,
-        std_parent_rela,
-        allergic_things,
-        allergic_drugs,
-        allergic_condition
-    });
 
     try {
+        const existingStudent = await std_info_.findOne({ std_id });
+        if (existingStudent) {
+            return res.status(400).json({ message: 'Student ID already exists. Cannot save.' });
+        }
+
+        const data_std = new std_info_({
+            std_id,
+            prefix,
+            std_Fname,
+            std_Lname,
+            std_nickname,
+            std_religion,
+            major,
+            std_tel
+        });
+
+        const data_std_sch = new std_sch({
+            std_id,
+            sch_name,
+            sch_province
+        });
+
+        const data_std_det = new std_details({
+            std_id,
+            std_father_name,
+            std_father_tel,
+            std_mother_name,
+            std_mother_tel,
+            std_parent_name,
+            std_parent_tel,
+            std_parent_rela,
+            allergic_things,
+            allergic_drugs,
+            allergic_condition
+        });
+
         const newdata_std = await data_std.save();
         const newdata_std_sch = await data_std_sch.save();
         const newdata_std_det = await data_std_det.save();
@@ -184,8 +190,6 @@ exports.get_stds = async (req, res) => {
             error: err.message
         });
     }
-
-
 }
 
 exports.get_std = async (req, res) => {
@@ -304,9 +308,9 @@ exports.del_std = async (req, res) => {
         if (!std_id) return res.status(404).json({
             message: "Student not found"
         })
-        const deldated1 = await std_info_.findOneAndDelete(std_id);
-        const deldated2 = await std_sch.findOneAndDelete(std_id);
-        const deldated3 = await std_details.findOneAndDelete(std_id);
+        const deldated1 = await std_info_.findOneAndDelete({ std_id: std_id });
+        const deldated2 = await std_sch.findOneAndDelete({ std_id: std_id });
+        const deldated3 = await std_details.findOneAndDelete({ std_id: std_id });
         return res.json({
             message: "Delete Successful",
             deldated1,

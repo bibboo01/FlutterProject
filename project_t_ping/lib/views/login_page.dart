@@ -22,19 +22,17 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final User? userModel = await AuthService().login(username, password);
         final int? role = userModel!.user.role;
+        final String? name = userModel!.user.username;
 
         Provider.of<UserProvider>(context, listen: false)
             .saveUser(userModel.user, userModel.token);
 
-        checkRole(role!);
-
+        _showLoginSuccessDialog(role!, name!);
         _usernameController.clear();
         _passwordController.clear();
       } catch (e) {
         print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to Login')),
-        );
+        _showErrorDialog('Fail to Login');
       }
     }
   }
@@ -58,6 +56,47 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text('Login Successful')),
       );
     }
+  }
+
+  void _showLoginSuccessDialog(int _Role, String name) {
+    checkRole(_Role!);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Login Successful'),
+          content: Text('Welcome $name to Page'),
+          actions: <Widget>[
+            TextButton(
+              child: Center(child: Text('OK')),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(child: Text('Warning')),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Center(child: Text('OK')),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

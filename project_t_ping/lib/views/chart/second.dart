@@ -23,7 +23,7 @@ class _DonutChartState extends State<DonutChart> {
     2: "วท.บ.คณิตศาสตร์และการจัดการข้อมูล",
     3: "วท.บ.วิทยาการคอมพิวเตอร์และสารสนเทศ",
     4: "วท.บ.ชีววิทยาศาสตร์",
-    5: "วท.บ.คณิตศาสตร์และการจัดการข้อมูล ร่วมกับ วท.บ.วิทยาการคอมพิวเตอร์และสารสนเทศ"
+    5: "วท.บ.คณิตศาสตร์และการจัดการข้อมูล ร่วมกับ\nวท.บ.วิทยาการคอมพิวเตอร์และสารสนเทศ"
   };
   final List<String> _years = [
     'All',
@@ -75,8 +75,8 @@ class _DonutChartState extends State<DonutChart> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Donut Chart',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  'สรุปยอดแต่ละสาขา',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 DropdownButton<String>(
                   hint: Text('Select Year'),
@@ -95,7 +95,7 @@ class _DonutChartState extends State<DonutChart> {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 8),
             if (_isLoading)
               CircularProgressIndicator() // Loading indicator
             else if (_errorMessage != null)
@@ -115,7 +115,7 @@ class _DonutChartState extends State<DonutChart> {
                   ),
                 ),
               ),
-            SizedBox(width: 16), // Add space between chart and labels
+            SizedBox(width: 8), // Add space between chart and labels
             _buildMajorLabels(),
           ],
         ),
@@ -191,7 +191,8 @@ class _DonutChartState extends State<DonutChart> {
     Map<int, int> majorCounts = _calculateStudentCounts();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: majorCounts.entries.map((entry) {
+      children:
+          majorCounts.entries.where((entry) => entry.value > 0).map((entry) {
         final color = Colors.primaries[entry.key % Colors.primaries.length];
         return Row(
           children: [

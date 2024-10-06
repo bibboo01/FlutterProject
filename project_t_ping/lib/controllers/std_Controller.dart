@@ -8,7 +8,7 @@ import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
 
 class StdInfo {
-  Future<void> add_info(
+  Future<String?> add_info(
       BuildContext context,
       String stdId,
       int prefix,
@@ -62,8 +62,50 @@ class StdInfo {
       }),
     );
     print('post is  ${response.statusCode}');
-    if (response.statusCode == 200) {
-      print('Product Post successfully');
+    try {
+      if (response.statusCode == 200) {
+        print('Student save successfully');
+      }
+      if (response.statusCode == 400) {
+        final responseData = json.decode(response.body);
+        print('Error: ${responseData['message']}');
+        return 'Student ID already exists. Cannot save.';
+      } else if (response.statusCode == 401) {
+        print('logging out.');
+        Logout(context);
+        throw Exception('Token denied');
+      } else if (response.statusCode == 403) {
+        final newAccessToken =
+            await AuthService().refreshToken(context, refreshToken);
+        if (newAccessToken != null && newAccessToken.isNotEmpty) {
+          return await add_info(
+              context,
+              stdId,
+              prefix,
+              stdFname,
+              stdLname,
+              stdNickname,
+              stdReligion,
+              major,
+              stdTel,
+              schName,
+              schProvince,
+              stdFatherName,
+              stdFatherTel,
+              stdMotherName,
+              stdMotherTel,
+              stdParentName,
+              stdParentTel,
+              stdParentRela,
+              allergicThings,
+              allergicDrugs,
+              allergicCondition,
+              accessToken,
+              refreshToken);
+        }
+      }
+    } catch (e) {
+      print('Exception occurred while editing student: $e');
     }
   }
 
@@ -91,7 +133,7 @@ class StdInfo {
       final newAccessToken =
           await AuthService().refreshToken(context, refreshToken);
       if (newAccessToken != null && newAccessToken.isNotEmpty) {
-        return await fetchStd(context, accessToken, refreshToken);
+        return await fetchStd(context, newAccessToken, refreshToken);
       } else {
         print('logging out.');
         Logout(context);
@@ -123,7 +165,7 @@ class StdInfo {
       final newAccessToken =
           await AuthService().refreshToken(context, refreshToken);
       if (newAccessToken != null && newAccessToken.isNotEmpty) {
-        return await fetchstudent(context, id, accessToken, refreshToken);
+        return await fetchstudent(context, id, newAccessToken, refreshToken);
       } else {
         print('logging out.');
         Logout(context);
@@ -155,7 +197,7 @@ class StdInfo {
         final newAccessToken =
             await AuthService().refreshToken(context, refreshToken);
         if (newAccessToken != null && newAccessToken.isNotEmpty) {
-          return await delstd(context, id, accessToken, refreshToken);
+          return await delstd(context, id, newAccessToken, refreshToken);
         } else {
           print('logging out.');
           Logout(context);
@@ -255,7 +297,7 @@ class StdInfo {
               allergicThings,
               allergicDrugs,
               allergicCondition,
-              accessToken,
+              newAccessToken,
               refreshToken);
         } else {
           print('logging out.');
@@ -271,5 +313,68 @@ class StdInfo {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.onLogout();
     Navigator.pushNamed(context, '/');
+  }
+
+  Future<String?> addstudent(
+    String stdId,
+    int prefix,
+    String stdFname,
+    String stdLname,
+    String stdNickname,
+    int stdReligion,
+    int major,
+    String stdTel,
+    String schName,
+    int schProvince,
+    String stdFatherName,
+    String stdFatherTel,
+    String stdMotherName,
+    String stdMotherTel,
+    String stdParentName,
+    String stdParentTel,
+    String stdParentRela,
+    String allergicThings,
+    String allergicDrugs,
+    String allergicCondition,
+  ) async {
+    final response = await http.post(
+      Uri.parse("$apiURL/std/fill_info"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "std_id": stdId,
+        "prefix": prefix,
+        "std_Fname": stdFname,
+        "std_Lname": stdLname,
+        "std_nickname": stdNickname,
+        "std_religion": stdReligion,
+        "major": major,
+        "std_tel": stdTel,
+        "sch_name": schName,
+        "sch_province": schProvince,
+        "std_father_name": stdFatherName,
+        "std_father_tel": stdFatherTel,
+        "std_mother_name": stdMotherName,
+        "std_mother_tel": stdMotherTel,
+        "std_parent_name": stdParentName,
+        "std_parent_tel": stdParentTel,
+        "std_parent_rela": stdParentRela,
+        "allergic_things": allergicThings,
+        "allergic_drugs": allergicDrugs,
+        "allergic_condition": allergicCondition
+      }),
+    );
+    print('post is  ${response.statusCode}');
+    if (response.statusCode == 201) {
+      print('Product Post successfully');
+    } else if (response.statusCode == 400) {
+      final responseData = json.decode(response.body);
+      print('Error: ${responseData['message']}');
+      return 'Student ID already exists. Cannot save.';
+    } else {
+      print('Unexpected error: ${response.statusCode}');
+      return 'An unexpected error occurred.';
+    }
   }
 }

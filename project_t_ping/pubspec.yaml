@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -40,6 +41,7 @@ dependencies:
   provider: ^6.1.2
 
   fl_chart: ^0.69.0
+  flutter_launcher_icons: ^0.14.1
 
 
 dev_dependencies:
@@ -58,7 +60,11 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  assets:
+    - assets/Image/BG/
+    - assets/Image/Icon/
+    - assets/Image/index/
+    - assets/Image/Logo/SciLogo.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
