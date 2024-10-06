@@ -32,17 +32,20 @@ class _AdminPageState extends State<AdminPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
+
     try {
       final allUser = await Usercontroller()
           .fetchUser(context, accessToken!, refreshToken!);
+
+      String? currentUserId = userProvider.currentUserId;
       setState(() {
-        _user = allUser;
+        _user = allUser.where((user) => user.id != currentUserId).toList();
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _isLoading = false; // Set loading to false
-        _errorMessage = e.toString(); // Store the error message
+        _isLoading = false;
+        _errorMessage = e.toString();
       });
     }
   }
@@ -113,7 +116,7 @@ class _AdminPageState extends State<AdminPage> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.post_add), // Use any appropriate icon
+            icon: Icon(Icons.post_add),
             onPressed: () {
               Navigator.pushNamed(context, '/Student');
             },
@@ -128,21 +131,16 @@ class _AdminPageState extends State<AdminPage> {
             const SizedBox(height: 20),
             Expanded(
               child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator()) // Loading indicator
+                  ? Center(child: CircularProgressIndicator())
                   : _errorMessage != null
-                      ? Center(
-                          child: Text('Error: $_errorMessage')) // Error message
+                      ? Center(child: Text('Error: $_errorMessage'))
                       : ListView.builder(
                           itemCount: _user.length,
                           itemBuilder: (context, index) {
-                            final fetchuser = _user[index];
+                            final user = _user[index];
                             return ListTile(
-                              title: Text(
-                                  fetchuser.username), // Handle null username
-                              subtitle: Text(
-                                "Role: ${setrole(fetchuser.role)}", // Handle null role
-                              ),
+                              title: Text(user.username),
+                              subtitle: Text("Role: ${setrole(user.role)}"),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -152,16 +150,14 @@ class _AdminPageState extends State<AdminPage> {
                                       Navigator.pushNamed(
                                         context,
                                         '/editPage',
-                                        arguments:
-                                            fetchuser, // Pass the user model if needed
+                                        arguments: user,
                                       );
                                     },
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
                                     onPressed: () {
-                                      _deluser(
-                                          fetchuser.id, fetchuser.username);
+                                      _deluser(user.id, user.username);
                                     },
                                   ),
                                 ],

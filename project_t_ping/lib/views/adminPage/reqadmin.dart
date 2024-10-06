@@ -5,6 +5,8 @@ import 'package:project_t_ping/views/chart/list.dart';
 import 'package:project_t_ping/views/chart/second.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class Reqadmin extends StatefulWidget {
   const Reqadmin({super.key});
@@ -37,8 +39,40 @@ class _ReqadminState extends State<Reqadmin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text(
+          'Home',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.blueAccent,
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: Icon(
+                Icons.navigate_before,
+                color: Colors.white,
+              )),
+          Builder(
+            builder: (context) {
+              return IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                ),
+              );
+            },
+          ),
+        ],
       ),
+      drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: _refreshData,
         child: const SingleChildScrollView(
@@ -58,10 +92,20 @@ class _ReqadminState extends State<Reqadmin> {
     );
   }
 
-  void Logout(BuildContext context) {
+  void _logout(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.onLogout();
-    Navigator.pushNamed(context, '/');
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      title: 'Logout Successful',
+      text: 'You have been logged out successfully.',
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.blue,
+      onConfirmBtnTap: () {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      },
+    );
   }
 
   Widget _buildDrawer() {
@@ -112,7 +156,7 @@ class _ReqadminState extends State<Reqadmin> {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
             onTap: () {
-              Logout(context);
+              _logout(context);
             },
           ),
           Divider(), // Optional divider for better separation

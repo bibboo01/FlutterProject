@@ -5,6 +5,8 @@ import 'package:project_t_ping/views/chart/list.dart';
 import 'package:project_t_ping/views/chart/second.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -22,7 +24,17 @@ class _HomePageState extends State<HomePage> {
   void _logout(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.onLogout();
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      title: 'Logout Successful',
+      text: 'You have been logged out successfully.',
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.blue,
+      onConfirmBtnTap: () {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      },
+    );
   }
 
   String _setRole(int? num) {
@@ -42,17 +54,26 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text(
+          'Home',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.blueAccent,
         actions: [
-          // Use a Builder to create a new context that has a Scaffold ancestor
           Builder(
             builder: (context) {
               return IconButton(
                 onPressed: () {
                   Scaffold.of(context).openDrawer();
                 },
-                icon: Icon(Icons.menu),
+                icon: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                ),
               );
             },
           ),
@@ -66,6 +87,13 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.all(16.0),
             child: Column(
               children: [
+                Text(
+                  'Dashboard',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 DonutChart(),
                 MyChart(),
                 ChartTooltip(),

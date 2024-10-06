@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => IndexPage(),
         '/Student': (context) => const StdForm(),
         '/login': (context) => LoginPage(),
-        '/Register': (context) => const register_page(),
+        '/Register': (context) => const RegisterPage(),
         '/admin': (context) => AdminPage(),
         '/editPage': (context) => const EditPage(),
         '/home': (context) => HomePage(), //after pass login

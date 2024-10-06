@@ -3,6 +3,8 @@ import 'package:project_t_ping/controllers/userController.dart';
 import 'package:project_t_ping/models/user_model.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class AdminPage extends StatefulWidget {
   @override
@@ -20,6 +22,35 @@ class _AdminPageState extends State<AdminPage> {
     _fetchAlluser();
   }
 
+  void _showErrorDialog(String message) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Warning',
+      text: message,
+      autoCloseDuration: const Duration(seconds: 3),
+      showConfirmBtn: true,
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.redAccent,
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(); // Optional: Close the dialog
+      },
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    QuickAlert.show(
+        context: context,
+        type: QuickAlertType.success,
+        title: 'Successful',
+        text: message, // Custom message
+        confirmBtnText: 'OK',
+        onConfirmBtnTap: () {
+          Navigator.pop(context); // Close the dialog
+        },
+        autoCloseDuration: Duration(seconds: 2));
+  }
+
   void _fetchAlluser() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
@@ -27,8 +58,11 @@ class _AdminPageState extends State<AdminPage> {
     try {
       final allUser = await Usercontroller()
           .fetchUser(context, accessToken!, refreshToken!);
+
       setState(() {
-        _user = allUser;
+        _user = allUser
+            .where((user) => user.id != userProvider.currentUserId)
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -44,53 +78,43 @@ class _AdminPageState extends State<AdminPage> {
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
 
-    if (accessToken!.isEmpty) {
-      print('Access token is null or empty');
-    }
-    // Show confirmation dialog before deleting
-    final confirmed = await showDialog<bool>(
+    // Show confirmation dialog using QuickAlert
+    QuickAlert.show(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete this $username?'),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(false); // Return false on cancel
-              },
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () {
-                Navigator.of(context).pop(true); // Return true on delete
-              },
-            ),
-          ],
-        );
+      type: QuickAlertType.confirm,
+      title: 'Confirm Deletion',
+      text: 'Are you sure you want to delete $username?',
+      confirmBtnText: 'Delete',
+      cancelBtnText: 'Cancel',
+      confirmBtnColor: Colors.red,
+      onConfirmBtnTap: () async {
+        Navigator.of(context).pop(); // Close the alert
+        try {
+          await Usercontroller()
+              .delUser(context, id, accessToken!, refreshToken!);
+          _fetchAlluser();
+          _showSuccessDialog(context, 'Deleted successfully!');
+        } catch (e) {
+          print(e);
+          _showErrorDialog('Failed to delete user: $e');
+        }
+      },
+      onCancelBtnTap: () {
+        Navigator.of(context).pop(); // Close the alert
       },
     );
-
-    if (confirmed == true) {
-      try {
-        await Usercontroller().delUser(context, id, accessToken, refreshToken!);
-        _fetchAlluser();
-      } catch (e) {
-        print(e);
-      }
-    }
   }
 
   String setrole(int? num) {
-    if (num == 0) {
-      return 'Waiting';
-    } else if (num == 1) {
-      return 'Admin';
-    } else if (num == 2) {
-      return 'User';
-    } else {
-      return 'Unknown Role';
+    switch (num) {
+      case 0:
+        return 'Waiting';
+      case 1:
+        return 'Admin';
+      case 2:
+        return 'User';
+      default:
+        return 'Unknown Role';
     }
   }
 
@@ -98,7 +122,8 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin'),
+        title: Text('Admin Dashboard'),
+        backgroundColor: Colors.blueAccent,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -122,7 +147,10 @@ class _AdminPageState extends State<AdminPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            Text('This is User List'),
+            Text(
+              'User List',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
             Expanded(
               child: _isLoading
@@ -133,33 +161,40 @@ class _AdminPageState extends State<AdminPage> {
                           itemCount: _user.length,
                           itemBuilder: (context, index) {
                             final fetchuser = _user[index];
-                            return ListTile(
-                              title: Text(fetchuser.username),
-                              subtitle: Text(
-                                "Role: ${setrole(fetchuser.role)}",
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/editPage',
-                                        arguments:
-                                            fetchuser, // Pass the user model if needed
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () {
-                                      _deluser(
-                                          fetchuser.id, fetchuser.username);
-                                    },
-                                  ),
-                                ],
+                            return Card(
+                              elevation: 3,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                title: Text(
+                                  fetchuser.username,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  "Role: ${setrole(fetchuser.role)}",
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/editPage',
+                                          arguments: fetchuser,
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        _deluser(
+                                            fetchuser.id, fetchuser.username);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -171,10 +206,20 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  void Logout(BuildContext context) {
+  void _logout(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.onLogout();
-    Navigator.pushNamed(context, '/');
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      title: 'Logout Successful',
+      text: 'You have been logged out successfully.',
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.blue,
+      onConfirmBtnTap: () {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      },
+    );
   }
 
   Widget _buildDrawer() {
@@ -189,7 +234,7 @@ class _AdminPageState extends State<AdminPage> {
         children: <Widget>[
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Colors.blueAccent,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,14 +267,14 @@ class _AdminPageState extends State<AdminPage> {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home),
+            leading: Icon(Icons.person),
             title: Text('Student Form'),
             onTap: () {
               Navigator.pushNamed(context, '/Student');
             },
           ),
           ListTile(
-            leading: Icon(Icons.settings),
+            leading: Icon(Icons.library_books),
             title: Text('Report'),
             onTap: () {
               Navigator.pushNamed(context, '/reqadmin');
@@ -239,7 +284,7 @@ class _AdminPageState extends State<AdminPage> {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
             onTap: () {
-              Logout(context);
+              _logout(context);
             },
           ),
           Divider(), // Optional divider for better separation
@@ -255,7 +300,7 @@ class _AdminPageState extends State<AdminPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\n มหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\n จ.พัทลุง 93210',
+              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\nมหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\nจ.พัทลุง 93210',
               style: TextStyle(
                 fontSize: 12,
               ),

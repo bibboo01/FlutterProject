@@ -7,7 +7,9 @@ class UserProvider extends ChangeNotifier {
   int? _role;
   String? _accessToken;
   String? _refreshToken;
+  String? _currentUserId;
 
+  String? get currentUserId => _currentUserId;
   String? get user => _user;
   String? get email => _email;
   int? get role => _role;
@@ -34,6 +36,11 @@ class UserProvider extends ChangeNotifier {
 
   void updateAccessToken(String token) {
     _accessToken = token;
+    notifyListeners();
+  }
+
+  void setCurrentUserId(String id) {
+    _currentUserId = id;
     notifyListeners();
   }
 }

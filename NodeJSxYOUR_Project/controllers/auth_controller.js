@@ -30,14 +30,12 @@ exports.login = async (req, res) => {
         password
     } = req.body;
     try {
-        const user_old = await User.findOne({
+        const user = await User.findOne({
             username
         });
-        if (!user_old) return res.status(400).send('user not found');
-        const isMatch = await bcrypt.compare(password, user_old.password);
+        if (!user) return res.status(400).send('user not found');
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).send('Invalid credntials');
-
-        const user = await User.findOne({ username }).select("-password");
 
         const accessToken = jwt.sign(
             { userId: user._id },
@@ -49,7 +47,7 @@ exports.login = async (req, res) => {
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1h' }
         );
-        res.status(200).json({ user: user, token: { accessToken, refreshToken }});
+        res.status(200).json({ user: user, token: { accessToken, refreshToken } });
     } catch (err) {
         console.log(err);
     }

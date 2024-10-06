@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_t_ping/controllers/std_Controller.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 enum InputType { text, number, phone }
 
@@ -138,7 +140,7 @@ class _StdFormState extends State<StdForm> {
   int? _selectedPrefix;
   int? _selectedProvince;
 
-  void post_std() async {
+  Future<void> post_std() async {
     final stdId = _stdIdController.text;
     final stdFname = _stdFnameController.text;
     final stdLname = _stdLnameController.text;
@@ -185,53 +187,23 @@ class _StdFormState extends State<StdForm> {
           allergicDrugs,
           allergicCondition);
       if (result == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Save successful!')),
-        );
-        Navigator.pushNamed(context, '/');
+        showSuccessAlert(context, 'Save successful!');
+        Navigator.pushReplacementNamed(context, '/');
         _clearForm();
       } else {
+        _showSaveFailedDialog(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result)),
         );
       }
     } catch (e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Save failed. Please try again.')),
-      );
+      _showSaveFailedDialog(context);
     }
   }
 
-  void _showSaveConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Save'),
-          content: Text('Do you want to save the changes?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                // User clicked Cancel
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                post_std();
-              },
-              child: Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 // Method to clear form fields
-  void _clearForm() {
+  Future<void> _clearForm() async {
     _stdIdController.clear();
     _stdFnameController.clear();
     _stdLnameController.clear();
@@ -256,13 +228,19 @@ class _StdFormState extends State<StdForm> {
     });
   }
 
-  void checkstudentId(String studentId) {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Information Form'),
+        title: Text(
+          'Student Information Form',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -270,17 +248,31 @@ class _StdFormState extends State<StdForm> {
           key: _formKey,
           child: ListView(
             children: [
+              // Title
+              Text(
+                'กรอกข้อมูลนิสิต',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+
               // Student ID
               _buildTextField(
                 _stdIdController,
-                'รหัสนิสิต*',
+                '*รหัสนิสิต',
                 'กรุณากรอกรหัสนิสิต',
                 InputType.number,
                 maxLength: 10,
               ),
+              SizedBox(height: 16),
+
               // Prefix
               _buildChoiceChipField(
-                'คำนำหน้า*',
+                '*คำนำหน้า',
                 _prefix,
                 _selectedPrefix,
                 (value) {
@@ -289,38 +281,48 @@ class _StdFormState extends State<StdForm> {
                   });
                 },
               ),
+              SizedBox(height: 16),
+
               // First Name
               _buildTextField(
                 _stdFnameController,
-                'ชื่อ*',
+                '*ชื่อ',
                 'กรุณากรอกชื่อ',
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // Last Name
               _buildTextField(
                 _stdLnameController,
-                'นามสกุล*',
-                'กรุณากรอกนามสกุล',
+                '*นามสกุล',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // Nickname
               _buildTextField(
                 _stdNicknameController,
-                'ชื่อเล่น*',
-                null,
+                '*ชื่อเล่น',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 20,
               ),
+              SizedBox(height: 16),
+
               // Telephone
               _buildTextField(
                 _stdTelController,
                 'เบอร์โทรศัพท์*',
-                'กรุณากรอกเบอร์โทรศัพท์',
+                'กรุณากรอก',
                 InputType.phone,
                 maxLength: 10,
               ),
+              SizedBox(height: 16),
+
               // Religion
               _buildDropdownForForm(
                 'ศาสนา*',
@@ -332,6 +334,8 @@ class _StdFormState extends State<StdForm> {
                   });
                 },
               ),
+              SizedBox(height: 16),
+
               // Major
               _buildDropdownForForm(
                 'วิชาเอก*',
@@ -343,14 +347,18 @@ class _StdFormState extends State<StdForm> {
                   });
                 },
               ),
+              SizedBox(height: 16),
+
               // School Name
               _buildTextField(
                 _schNameController,
                 'ชื่อโรงเรียนที่สำเร็จการศึกษา*',
-                'กรุณากรอกชื่อโรงเรียนรที่สำเร็จการศึกษา',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // School Province
               _buildProvinceDropdown(
                 _selectedProvince,
@@ -360,38 +368,48 @@ class _StdFormState extends State<StdForm> {
                   });
                 },
               ),
+              SizedBox(height: 16),
+
               // Father's Name
               _buildTextField(
                 _stdFatherNameController,
-                'ชื่อบิดา*',
-                null,
+                '*ชื่อบิดา',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // Father's Telephone
               _buildTextField(
                 _stdFatherTelController,
-                'เบอร์โทรศัพท์*',
-                null,
+                '*เบอร์โทรศัพท์*',
+                'กรุณากรอก',
                 InputType.phone,
                 maxLength: 10,
               ),
+              SizedBox(height: 16),
+
               // Mother's Name
               _buildTextField(
                 _stdMotherNameController,
-                'ชื่อมารดา*',
-                null,
+                '*ชื่อมารดา',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // Mother's Telephone
               _buildTextField(
                 _stdMotherTelController,
-                'เบอร์โทรศัพท์*',
-                null,
+                '*เบอร์โทรศัพท์',
+                'กรุณากรอก',
                 InputType.phone,
                 maxLength: 10,
               ),
+              SizedBox(height: 16),
+
               // Parent's Name
               _buildTextField(
                 _stdParentNameController,
@@ -400,6 +418,8 @@ class _StdFormState extends State<StdForm> {
                 InputType.text,
                 maxLength: 50,
               ),
+              SizedBox(height: 16),
+
               // Parent's Telephone
               _buildTextField(
                 _stdParentTelController,
@@ -408,6 +428,8 @@ class _StdFormState extends State<StdForm> {
                 InputType.phone,
                 maxLength: 10,
               ),
+              SizedBox(height: 16),
+
               // Parent's Relationship
               _buildTextField(
                 _stdParentRelaController,
@@ -416,43 +438,113 @@ class _StdFormState extends State<StdForm> {
                 InputType.text,
                 maxLength: 30,
               ),
+              SizedBox(height: 16),
+
               // Allergic to Things
               _buildTextField(
                 _allergicThingsController,
-                'อาหารที่แพ้*',
-                null,
+                '*อาหารที่แพ้',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 100,
               ),
+              SizedBox(height: 16),
+
               // Allergic to Drugs
               _buildTextField(
                 _allergicDrugsController,
-                'ยาที่แพ้*',
-                null,
+                '*ยาที่แพ้',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 100,
               ),
+              SizedBox(height: 16),
+
               // Allergic Condition
               _buildTextField(
                 _allergicConditionController,
-                'ประวัติการแพทย์*',
-                null,
+                '*ประวัติการแพทย์',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 100,
               ),
               SizedBox(height: 20),
+
+              // Submit Button
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
                     _showSaveConfirmationDialog(context);
                   }
                 },
-                child: Text('Submit'),
+                child: Text(
+                  'Submit',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blueAccent,
+                  textStyle: TextStyle(fontSize: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showSaveFailedDialog(BuildContext context) async {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Save Failed',
+      text: 'There was an error saving your changes. Please try again.',
+      confirmBtnText: 'OK',
+      onConfirmBtnTap: () {
+        Navigator.pop(context); // Close the dialog
+      },
+      backgroundColor: Colors.white,
+      titleColor: Colors.black,
+      textColor: Colors.black,
+    );
+  }
+
+  Future<void> _showSaveConfirmationDialog(BuildContext context) async {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.confirm,
+      title: 'Confirm Save',
+      text: 'Do you want to save the changes?',
+      confirmBtnText: 'Save',
+      cancelBtnText: 'Cancel',
+      onCancelBtnTap: () {
+        Navigator.pop(context); // Close the dialog
+      },
+      onConfirmBtnTap: () {
+        post_std();
+        Navigator.pop(context); // Close the dialog after saving
+      },
+      backgroundColor: Colors.white,
+      titleColor: Colors.black,
+      textColor: Colors.black,
+    );
+  }
+
+  Future<void> showSuccessAlert(BuildContext context, String message) async {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      title: 'Success',
+      text: message,
+      autoCloseDuration: const Duration(seconds: 3),
+      showConfirmBtn: true,
     );
   }
 

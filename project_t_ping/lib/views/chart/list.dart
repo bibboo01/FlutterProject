@@ -3,6 +3,8 @@ import 'package:project_t_ping/controllers/std_Controller.dart';
 import 'package:project_t_ping/models/std_model.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class ListCard extends StatefulWidget {
   const ListCard({Key? key}) : super(key: key);
@@ -224,20 +226,14 @@ class _ListCardState extends State<ListCard> {
           refreshToken!);
       if (result == null) {
         Navigator.of(context).pop();
-        _showSuccessDialog();
+        _showSuccessDialog(context, 'Student saved successfully!');
         _fetchAllstudents();
         _clearForm();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(
-                    result)) // Display the error message from the addstudent function
-            );
+        _showSaveFailedDialog(context);
       }
     } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Save failed. Please try again.')),
-      );
+      _showSaveFailedDialog(context);
     }
   }
 
@@ -311,27 +307,24 @@ class _ListCardState extends State<ListCard> {
     _fetchAllstudents();
   }
 
-  Future<void> _deleteStudent(String stdid) async {
+  void _deleteStudent(String stdid) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
     String? refreshToken = userProvider.refreshToken;
-    final confirmed = await showDialog<bool>(
+
+    // Show confirmation dialog using QuickAlert
+    final confirmed = await QuickAlert.show(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete this ID: $stdid?'),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
-        );
+      type: QuickAlertType.confirm,
+      title: 'Confirm Deletion',
+      text: 'Are you sure you want to delete this ID: $stdid?',
+      confirmBtnText: 'Delete',
+      cancelBtnText: 'Cancel',
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(true); // Close dialog and return true
+      },
+      onCancelBtnTap: () {
+        Navigator.of(context).pop(false); // Close dialog and return false
       },
     );
 
@@ -339,14 +332,15 @@ class _ListCardState extends State<ListCard> {
       try {
         await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
         _fetchAllstudents();
+        _showSuccessDialog(context, 'Student deleted successfully!');
         Navigator.of(context).pop();
       } catch (e) {
-        print('Error deleting student: $e');
+        _showErrorDialog('Failed to delete student: $e');
       }
     }
   }
 
-  Future<void> _editStudentDetails(studentInfo student) async {
+  void _editStudentDetails(studentInfo student) async {
     final TextEditingController stdIdController =
         TextEditingController(text: student.stdInfo.stdId);
     final TextEditingController fnameController =
@@ -530,7 +524,7 @@ class _ListCardState extends State<ListCard> {
                 String allergicThings = allergicThingsController.text;
                 String allergicDrugs = allergicDrugsController.text;
                 String allergicCondition = allergicConditionController.text;
-                await _edit(
+                _edit(
                     stdId,
                     prefix,
                     stdFname,
@@ -561,7 +555,7 @@ class _ListCardState extends State<ListCard> {
     );
   }
 
-  Future<void> _edit(
+  void _edit(
     String stdId,
     int prefix,
     String stdFname,
@@ -611,8 +605,10 @@ class _ListCardState extends State<ListCard> {
           allergicCondition,
           accessToken!,
           refreshToken!);
-      _fetchAllstudents();
       Navigator.of(context).pop();
+      _fetchAllstudents();
+      _showSuccessDialog(
+          context, 'The student information has been successfully updated.');
     } catch (e) {
       print('Error deleting student: $e');
     }
@@ -629,19 +625,20 @@ class _ListCardState extends State<ListCard> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'รายละเอียดนิสิต',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Positioned(
-                right: 0,
-                top: 0,
-                child: Row(
-                  children: [
-                    TextButton(
-                        child: Icon(Icons.clear),
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        })
-                  ],
+                right: -10,
+                top: -10,
+                child: TextButton(
+                  child: Icon(Icons.clear, color: Colors.red),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
                 ),
               ),
             ],
@@ -649,66 +646,123 @@ class _ListCardState extends State<ListCard> {
           content: SingleChildScrollView(
             child: ListBody(
               children: [
-                Center(child: Text("ข้อมูลนิสิต")),
-                SizedBox(height: 8),
-                Text("รหัสนิสิต: ${student.stdInfo.stdId}"),
-                SizedBox(height: 8),
-                Text(
-                    "ชื่อ-นามสกุล: ${_prefix(student.stdInfo.prefix)}${student.stdInfo.stdFname} ${student.stdInfo.stdLname}"),
-                SizedBox(height: 8),
-                Text("ชื่อเล่น: ${student.stdInfo.stdNickname}"),
-                SizedBox(height: 8),
-                Text("ศาสนา: ${_religion(student.stdInfo.stdReligion)}"),
-                SizedBox(height: 8),
-                Text("วิชาเอก: ${_major(student.stdInfo.major)}"),
-                SizedBox(height: 8),
-                Text("เบอร์โทร: ${student.stdInfo.stdTel}"),
-                SizedBox(height: 8),
-                Center(child: Text("ข้อมูลครอบครัว")),
-                SizedBox(height: 8),
-                Text("ชื่อบิดา: ${student.stdInfo.details.stdFatherName}"),
-                SizedBox(height: 8),
-                Text("เบอร์โทร: ${student.stdInfo.details.stdFatherTel}"),
-                SizedBox(height: 8),
-                Text("ชื่อมารดา: ${student.stdInfo.details.stdMotherName}"),
-                SizedBox(height: 8),
-                Text("เบอร์โทร: ${student.stdInfo.details.stdMotherTel}"),
-                SizedBox(height: 8),
-                Text("ชื่อผู้ปกครอง: ${student.stdInfo.details.stdParentName}"),
-                SizedBox(height: 8),
-                Text("เบอร์โทร: ${student.stdInfo.details.stdParentTel}"),
-                SizedBox(height: 8),
-                Text("ความสัมพัมธ์: ${student.stdInfo.details.stdParentRela}"),
-                SizedBox(height: 8),
-                Center(child: Text("ข้อมูลทางการแพทย์")),
-                SizedBox(height: 8),
-                Text("สิ่งที่แพ้: ${student.stdInfo.details.allergicThings}"),
-                SizedBox(height: 8),
-                Text("ยาที่แพ้: ${student.stdInfo.details.allergicDrugs}"),
-                SizedBox(height: 8),
-                Text(
-                    "ประวัติทางการแพทย์: ${student.stdInfo.details.allergicCondition}"),
-                SizedBox(height: 8),
-                Center(child: Text("ข้อมูลโรงเรียนที่จบ")),
-                SizedBox(height: 8),
-                Text("ชื่อโรงเรียน: ${student.stdInfo.school.schName}"),
-                SizedBox(height: 8),
-                Text(
-                    "จังหวัด: ${getProvinceName(student.stdInfo.school.schProvince)}"),
-                SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    "ข้อมูลนิสิต",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                _buildDetailRow("รหัสนิสิต:", student.stdInfo.stdId),
+                _buildDetailRow("ชื่อ-นามสกุล:",
+                    "${_prefix(student.stdInfo.prefix)} ${student.stdInfo.stdFname} ${student.stdInfo.stdLname}"),
+                _buildDetailRow("ชื่อเล่น:", student.stdInfo.stdNickname),
+                _buildDetailRow(
+                    "ศาสนา:", _religion(student.stdInfo.stdReligion)),
+                _buildDetailRow("วิชาเอก:", _major(student.stdInfo.major)),
+                _buildDetailRow("เบอร์โทร:", student.stdInfo.stdTel),
+                SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    "ข้อมูลครอบครัว",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                _buildDetailRow(
+                    "ชื่อบิดา:", student.stdInfo.details.stdFatherName),
+                _buildDetailRow(
+                    "เบอร์โทร:", student.stdInfo.details.stdFatherTel),
+                _buildDetailRow(
+                    "ชื่อมารดา:", student.stdInfo.details.stdMotherName),
+                _buildDetailRow(
+                    "เบอร์โทร:", student.stdInfo.details.stdMotherTel),
+                _buildDetailRow(
+                    "ชื่อผู้ปกครอง:", student.stdInfo.details.stdParentName),
+                _buildDetailRow(
+                    "เบอร์โทร:", student.stdInfo.details.stdParentTel),
+                _buildDetailRow(
+                    "ความสัมพันธ์:", student.stdInfo.details.stdParentRela),
+                SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    "ข้อมูลทางการแพทย์",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                _buildDetailRow(
+                    "สิ่งที่แพ้:", student.stdInfo.details.allergicThings),
+                _buildDetailRow(
+                    "ยาที่แพ้:", student.stdInfo.details.allergicDrugs),
+                _buildDetailRow("ประวัติทางการแพทย์:",
+                    student.stdInfo.details.allergicCondition),
+                SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    "ข้อมูลโรงเรียนที่จบ",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                _buildDetailRow(
+                    "ชื่อโรงเรียน:", student.stdInfo.school.schName),
+                _buildDetailRow("จังหวัด:",
+                    getProvinceName(student.stdInfo.school.schProvince)),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ElevatedButton(
-                      child: Text('Edit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
                       onPressed: () async {
-                        await _editStudentDetails(student);
+                        _editStudentDetails(student);
                       },
                     ),
                     ElevatedButton(
-                      child: Text('Delete'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
                       onPressed: () async {
-                        await _deleteStudent(student.stdInfo.stdId);
+                        _deleteStudent(student.stdInfo.stdId);
                       },
                     ),
                   ],
@@ -921,47 +975,31 @@ class _ListCardState extends State<ListCard> {
     );
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Save Successful'),
-          actions: <Widget>[
-            TextButton(
-              child: Center(child: Text('OK')),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showAddStudentDialog() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Student',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            'Add Student',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
           content: Form(
             key: _formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Student ID
                   _buildTextField(
                     _stdIdController,
-                    'รหัสนิสิต',
+                    '*รหัสนิสิต',
                     'กรุณากรอกรหัสนิสิต',
                     TextInputType.number,
                     maxLength: 10,
                   ),
-                  // Prefix
                   _buildDropdownForForm(
                     'คำนำหน้า',
                     _Prefix,
@@ -971,40 +1009,41 @@ class _ListCardState extends State<ListCard> {
                         _selectedPrefix = value;
                       });
                     },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'กรุณาเลือก';
+                      }
+                      return null;
+                    },
                   ),
-                  // First Name
                   _buildTextField(
                     _stdFnameController,
-                    'ชื่อ',
-                    'กรุณากรอกชื่อ',
+                    '*ชื่อ',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // Last Name
                   _buildTextField(
                     _stdLnameController,
-                    'นามสกุล',
-                    'กรุณากรอกนามสกุล',
+                    '*นามสกุล',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // Nickname
                   _buildTextField(
                     _stdNicknameController,
-                    'ชื่อเล่น',
-                    null,
+                    '*ชื่อเล่น',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 20,
                   ),
-                  // Telephone
                   _buildTextField(
                     _stdTelController,
-                    'เบอร์โทรศัพท์',
-                    'กรุณากรอกเบอร์โทรศัพท์',
+                    '*เบอร์โทรศัพท์',
+                    'กรุณากรอก',
                     TextInputType.phone,
                     maxLength: 10,
                   ),
-                  // Religion
                   _buildDropdownForForm(
                     'ศาสนา',
                     _Religions,
@@ -1014,8 +1053,13 @@ class _ListCardState extends State<ListCard> {
                         _selectedReligion = value;
                       });
                     },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'กรุณาเลือก';
+                      }
+                      return null;
+                    },
                   ),
-                  // Major
                   _buildDropdownForForm(
                     'วิชาเอก',
                     _Majors,
@@ -1025,16 +1069,20 @@ class _ListCardState extends State<ListCard> {
                         _selectedMajor = value;
                       });
                     },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'กรุณาเลือก';
+                      }
+                      return null;
+                    },
                   ),
-                  // School Name
                   _buildTextField(
                     _schNameController,
-                    'ชื่อโรงเรียนที่สำเร็จการศึกษา',
-                    'กรุณากรอกชื่อโรงเรียนรที่สำเร็จการศึกษา',
+                    '*ชื่อโรงเรียนที่สำเร็จการศึกษา',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // School Province
                   _buildProvinceDropdown(
                     _selectedProvince,
                     (value) {
@@ -1042,40 +1090,41 @@ class _ListCardState extends State<ListCard> {
                         _selectedProvince = value;
                       });
                     },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'กรุณาเลือกจังหวัด'; // "Please select a province"
+                      }
+                      return null; // No validation error
+                    },
                   ),
-                  // Father's Name
                   _buildTextField(
                     _stdFatherNameController,
-                    'ชื่อบิดา',
-                    null,
+                    '*ชื่อบิดา',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // Father's Telephone
                   _buildTextField(
                     _stdFatherTelController,
-                    'เบอร์โทรศัพท์',
-                    null,
+                    '*เบอร์โทรศัพท์',
+                    'กรุณากรอก',
                     TextInputType.phone,
                     maxLength: 10,
                   ),
-                  // Mother's Name
                   _buildTextField(
                     _stdMotherNameController,
-                    'ชื่อมารดา',
-                    null,
+                    '*ชื่อมารดา',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // Mother's Telephone
                   _buildTextField(
                     _stdMotherTelController,
-                    'เบอร์โทรศัพท์',
-                    null,
+                    '*เบอร์โทรศัพท์',
+                    'กรุณากรอก',
                     TextInputType.phone,
                     maxLength: 10,
                   ),
-                  // Parent's Name
                   _buildTextField(
                     _stdParentNameController,
                     'ชื่อผู้ปกครอง',
@@ -1083,7 +1132,6 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.text,
                     maxLength: 50,
                   ),
-                  // Parent's Telephone
                   _buildTextField(
                     _stdParentTelController,
                     'เบอร์โทรศัพท์',
@@ -1091,7 +1139,6 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.phone,
                     maxLength: 10,
                   ),
-                  // Parent's Relationship
                   _buildTextField(
                     _stdParentRelaController,
                     'ความสัมพันธ์ของนิสิต',
@@ -1099,27 +1146,24 @@ class _ListCardState extends State<ListCard> {
                     TextInputType.text,
                     maxLength: 30,
                   ),
-                  // Allergic to Things
                   _buildTextField(
                     _allergicThingsController,
-                    'อาหารที่แพ้',
-                    null,
+                    'อาหารที่แพ้*',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 100,
                   ),
-                  // Allergic to Drugs
                   _buildTextField(
                     _allergicDrugsController,
-                    'ยาที่แพ้',
-                    null,
+                    'ยาที่แพ้*',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 100,
                   ),
-                  // Allergic Condition
                   _buildTextField(
                     _allergicConditionController,
-                    'ประวัติการแพทย์',
-                    null,
+                    'ประวัติการแพทย์*',
+                    'กรุณากรอก',
                     TextInputType.text,
                     maxLength: 100,
                   ),
@@ -1132,18 +1176,48 @@ class _ListCardState extends State<ListCard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  post_std(); // Call your function to handle student addition
+                  _showSaveConfirmationDialog(context);
                 }
               },
               child: Text('Submit'),
             ),
           ],
         );
+      },
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    QuickAlert.show(
+        context: context,
+        type: QuickAlertType.success,
+        title: 'Successful',
+        text: message, // Custom message
+        confirmBtnText: 'OK',
+        onConfirmBtnTap: () {
+          Navigator.pop(context); // Close the dialog
+          _fetchAllstudents();
+        },
+        autoCloseDuration: Duration(seconds: 2));
+  }
+
+  void _showErrorDialog(String message) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Warning',
+      text: message,
+      autoCloseDuration: const Duration(seconds: 3),
+      showConfirmBtn: true,
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.redAccent,
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(); // Optional: Close the dialog
       },
     );
   }
@@ -1176,8 +1250,13 @@ class _ListCardState extends State<ListCard> {
     );
   }
 
-  Widget _buildDropdownForForm<T>(String label, Map<T, String> options,
-      T? selectedValue, ValueChanged<T?> onChanged) {
+  Widget _buildDropdownForForm<T>(
+    String label,
+    Map<T, String> options,
+    T? selectedValue,
+    ValueChanged<T?> onChanged, {
+    FormFieldValidator<T>? validator, // Optional custom validator
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<T>(
@@ -1194,19 +1273,79 @@ class _ListCardState extends State<ListCard> {
                 ))
             .toList(),
         onChanged: onChanged,
+        validator: validator != null
+            ? (value) {
+                return validator(value); // Use custom validator if provided
+              }
+            : null, // No validation if not provided
+      ),
+    );
+  }
+
+  void _showSaveConfirmationDialog(BuildContext context) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.confirm,
+      title: 'Confirm Save',
+      text: 'Do you want to save the changes?',
+      confirmBtnText: 'Save',
+      cancelBtnText: 'Cancel',
+      onCancelBtnTap: () {
+        Navigator.pop(context); // Close the dialog
+      },
+      onConfirmBtnTap: () {
+        post_std(); // Call the save function
+        Navigator.pop(context); // Close the dialog after saving
+      },
+      backgroundColor: Colors.white,
+      titleColor: Colors.black,
+      textColor: Colors.black,
+    );
+  }
+
+  void _showSaveFailedDialog(BuildContext context) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Save Failed',
+      text: 'There was an error saving your changes. Please try again.',
+      confirmBtnText: 'OK',
+      onConfirmBtnTap: () {
+        Navigator.pop(context); // Close the dialog
+      },
+      backgroundColor: Colors.white,
+      titleColor: Colors.black,
+      textColor: Colors.black,
+    );
+  }
+
+  Widget _buildDetailRow(String title, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(
+              child:
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }
 
   DropdownButtonFormField<int> _buildProvinceDropdown(
-      int? selectedValue, Function(int?)? onChanged) {
+    int? selectedValue,
+    Function(int?)? onChanged, {
+    FormFieldValidator<int>? validator, // Optional custom validator
+  }) {
     return DropdownButtonFormField<int>(
       decoration: InputDecoration(
         labelText: 'เลือกจังหวัด', // "Select Province" in Thai
         border: OutlineInputBorder(),
       ),
       value: selectedValue,
-      hint: Text('กรุณาเลือกจังหวัด'), // "Please select a province"
+      hint: Text('กรุณาเลือกจังหวัด'),
       items: _ThaiProvinces.entries
           .map((entry) => DropdownMenuItem<int>(
                 value: entry.key,
@@ -1214,6 +1353,11 @@ class _ListCardState extends State<ListCard> {
               ))
           .toList(),
       onChanged: onChanged,
+      validator: validator != null
+          ? (value) {
+              return validator(value);
+            }
+          : null,
     );
   }
 }

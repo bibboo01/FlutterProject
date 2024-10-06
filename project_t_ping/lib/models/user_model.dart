@@ -47,12 +47,14 @@ class Token {
 class userModel {
   String id;
   String username;
+  String password;
   String email;
   int role;
 
   userModel({
     required this.id,
     required this.username,
+    required this.password,
     required this.email,
     required this.role,
   });
@@ -60,6 +62,7 @@ class userModel {
   factory userModel.fromJson(Map<String, dynamic> json) => userModel(
         id: json["_id"],
         username: json["username"],
+        password: json["password"],
         email: json["email"],
         role: json["role"],
       );
@@ -67,6 +70,7 @@ class userModel {
   Map<String, dynamic> toJson() => {
         "_id": id,
         "username": username,
+        "password": password,
         "email": email,
         "role": role,
       };

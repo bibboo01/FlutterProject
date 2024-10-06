@@ -8,7 +8,6 @@ class IndexPage extends StatefulWidget {
 
 class _IndexPageState extends State<IndexPage> {
   final PageController _pageController = PageController();
-
   int _currentIndex = 0;
   late Timer _timer;
 
@@ -17,7 +16,6 @@ class _IndexPageState extends State<IndexPage> {
     'assets/Image/index/slider2.jpg',
     'assets/Image/index/slider3.jpeg',
     'assets/Image/index/slider4.jpg',
-    // Add more images as needed
   ];
 
   @override
@@ -28,11 +26,9 @@ class _IndexPageState extends State<IndexPage> {
 
   void _startAutoScroll() {
     _timer = Timer.periodic(Duration(seconds: 3), (timer) {
-      if (_currentIndex < _images.length - 1) {
-        _currentIndex++;
-      } else {
-        _currentIndex = 0;
-      }
+      setState(() {
+        _currentIndex = (_currentIndex + 1) % _images.length;
+      });
       _pageController.animateToPage(
         _currentIndex,
         duration: Duration(milliseconds: 300),
@@ -58,72 +54,94 @@ class _IndexPageState extends State<IndexPage> {
               'assets/Image/Logo/SciLogo.png',
               height: 50,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [],
-            ),
+            SizedBox(width: 8),
           ],
         ),
         automaticallyImplyLeading: false,
         actions: [
-          Builder(builder: (context) {
-            return IconButton(
-              icon: Icon(Icons.menu), // Use menu icon
-              onPressed: () {
-                Scaffold.of(context).openDrawer(); // Open the drawer
-              },
-            );
-          }),
+          Builder(
+            builder: (context) {
+              return IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ),
         ],
       ),
       drawer: _buildDrawer(),
-      body: Column(
-        children: [
-          Text(
-            'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              color: Color.fromRGBO(0, 75, 195, 0.500),
-            ),
-          ),
-          Text(
-            'มหาวิทยาลัยทักษิณ',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
-            ),
-          ),
-          SizedBox(
-            height: 8,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _images.length,
-                itemBuilder: (context, index) {
-                  return Image.asset(
-                    _images[index],
-                    fit: BoxFit.cover,
-                  );
-                },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(
+              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Color.fromRGBO(0, 75, 195, 1),
               ),
             ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[],
+            Text(
+              'มหาวิทยาลัยทักษิณ',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[700],
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 16),
+            SizedBox(
+              child: Container(
+                height: 135,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _images.length,
+                    itemBuilder: (context, index) {
+                      return Image.asset(
+                        _images[index],
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            _buildPageIndicator(),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_images.length, (index) {
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 4),
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _currentIndex == index ? Colors.blueAccent : Colors.grey,
+          ),
+        );
+      }),
     );
   }
 
@@ -172,7 +190,10 @@ class _IndexPageState extends State<IndexPage> {
               Navigator.pushNamed(context, '/login');
             },
           ),
-          Divider(), // Optional divider for better separation
+          SizedBox(
+            height: 300,
+          ),
+          Divider(),
           ListTile(
             title: Text(
               'Contact Us',
@@ -185,10 +206,8 @@ class _IndexPageState extends State<IndexPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\n มหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\n จ.พัทลุง 93210',
-              style: TextStyle(
-                fontSize: 12,
-              ),
+              'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล\nมหาวิทยาลัยทักษิณ\n222 หมู่ 2 ต.บ้านพร้าว อ.ป่าพะยอม\nจ.พัทลุง 93210',
+              style: TextStyle(fontSize: 12),
             ),
           ),
         ],
