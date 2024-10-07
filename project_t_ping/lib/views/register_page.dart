@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_t_ping/controllers/authController.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -15,6 +17,35 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _emailController = TextEditingController();
 
+  void _showErrorDialog(String message) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Warning',
+      text: message,
+      autoCloseDuration: const Duration(seconds: 3),
+      showConfirmBtn: true,
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.redAccent,
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(); // Optional: Close the dialog
+      },
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    QuickAlert.show(
+        context: context,
+        type: QuickAlertType.success,
+        title: 'Successful',
+        text: message,
+        confirmBtnText: 'OK',
+        onConfirmBtnTap: () {
+          Navigator.pop(context);
+        },
+        autoCloseDuration: Duration(seconds: 2));
+  }
+
   void register() async {
     final username = _usernameController.text;
     final password = _passwordController.text;
@@ -22,15 +53,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       await AuthService().register(username, password, email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Register successful')),
-      );
+      _showSuccessDialog(context, 'Register successful');
       Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed')),
-      );
+      _showErrorDialog('Error: $e');
     }
   }
 
@@ -100,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _usernameController,
                         decoration: InputDecoration(
-                          labelText: 'Username',
+                          labelText: 'ชื่อผู้ใช้',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person),
                           filled: true,
@@ -113,10 +140,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your username';
+                            return 'กรุณากรอกชื่อผู้ใช้';
                           }
                           if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                            return 'Username can only contain letters';
+                            return 'ชื่อผู้ใช้ต้องมีตัวอักษรเท่านั้น';
+                          }
+                          if (value.length <= 10) {
+                            return 'ต้องมีตัวอักษร 10 ตัวขึ้นไป';
                           }
                           return null;
                         },
@@ -125,7 +155,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'รหัสผ่าน',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.lock),
                           filled: true,
@@ -139,11 +169,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'กรุณากรอกรหัสผ่าน';
                           }
                           if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])')
                               .hasMatch(value)) {
-                            return 'Password must contain both letters and numbers';
+                            return 'รหัสผ่านจะต้องมีทั้งตัวอักษรและตัวเลข';
+                          }
+                          if (value.length <= 12) {
+                            return 'ต้องมีตัวอักษร 12 ตัวขึ้นไป';
                           }
                           return null;
                         },
@@ -152,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: 'Email',
+                            labelText: 'อีเมล',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.email),
                             filled: true,
@@ -161,11 +194,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
+                              return 'กรุณากรอกอีเมล์';
                             }
                             if (!RegExp(r'^[a-zA-Z0-9._%+-]+@tsu\.ac\.th$')
                                 .hasMatch(value)) {
-                              return 'Please enter a valid email address ending with @tsu.ac.th';
+                              return 'กรุณากรอกที่อยู่อีเมลที่ถูกต้องซึ่งลงท้ายด้วย @tsu.ac.th';
                             }
                             return null;
                           }),
@@ -174,6 +207,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         onPressed: () {
                           if (_formKey.currentState?.validate() ?? false) {
                             register();
+                          } else {
+                            _showErrorDialog('Registration failed');
                           }
                         },
                         child: Text('Register'),

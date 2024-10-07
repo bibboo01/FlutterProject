@@ -25,7 +25,7 @@ class _AddUserPageState extends State<AddUserPage> {
     try {
       await AuthService().register(username, password, email);
       _showSuccessDialog(context, 'Add user successful');
-      Navigator.pushReplacementNamed(context, '/admin');
+      cleartextfield();
     } catch (e) {
       _showErrorDialog('Add user Failed ');
       print(e);
@@ -40,7 +40,7 @@ class _AddUserPageState extends State<AddUserPage> {
         text: message, // Custom message
         confirmBtnText: 'OK',
         onConfirmBtnTap: () {
-          Navigator.pop(context); // Close the dialog
+          Navigator.pushReplacementNamed(context, '/admin');
         },
         autoCloseDuration: Duration(seconds: 2));
   }
@@ -84,7 +84,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Create a New User',
+                    'สร้างผู้ใช้ใหม่',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -94,7 +94,7 @@ class _AddUserPageState extends State<AddUserPage> {
                   SizedBox(height: 20),
                   _buildTextField(
                     controller: _usernameController,
-                    label: 'Username',
+                    label: 'ชื่อผู้ใช้',
                     inputType: TextInputType.text,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]'))
@@ -102,10 +102,13 @@ class _AddUserPageState extends State<AddUserPage> {
                     maxLength: 20,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a username';
+                        return 'กรุณากรอกชื่อผู้ใช้';
                       }
                       if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                        return 'Username can only contain letters';
+                        return 'ชื่อผู้ใช้ต้องมีตัวอักษรเท่านั้น';
+                      }
+                      if (value.length <= 10) {
+                        return 'ต้องมีตัวอักษร 10 ตัวขึ้นไป';
                       }
                       return null; // Valid input
                     },
@@ -114,7 +117,7 @@ class _AddUserPageState extends State<AddUserPage> {
                   _buildTextField(
                     controller:
                         _passwordController, // Assuming you have a password controller
-                    label: 'Password',
+                    label: 'รหัสผ่าน',
                     inputType: TextInputType.visiblePassword,
                     obscureText: true,
                     inputFormatters: [
@@ -124,11 +127,14 @@ class _AddUserPageState extends State<AddUserPage> {
                     maxLength: 20,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return 'กรุณากรอกรหัสผ่าน';
                       }
                       if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])')
                           .hasMatch(value)) {
-                        return 'Password must contain both letters and numbers';
+                        return 'รหัสผ่านจะต้องมีทั้งตัวอักษรและตัวเลข';
+                      }
+                      if (value.length <= 12) {
+                        return 'ต้องมีตัวอักษร 12 ตัวขึ้นไป';
                       }
                       return null; // Valid input
                     },
@@ -136,7 +142,7 @@ class _AddUserPageState extends State<AddUserPage> {
                   SizedBox(height: 16),
                   _buildTextField(
                     controller: _emailController,
-                    label: 'Email',
+                    label: 'อีเมล',
                     inputType: TextInputType.emailAddress,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
@@ -144,11 +150,11 @@ class _AddUserPageState extends State<AddUserPage> {
                     ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter an email';
+                        return 'กรุณากรอกอีเมล์';
                       }
                       if (!RegExp(r'^[a-zA-Z0-9._%+-]+@tsu\.ac\.th$')
                           .hasMatch(value)) {
-                        return 'Please enter a valid email address ending with @tsu.ac.th';
+                        return 'กรุณากรอกที่อยู่อีเมลที่ถูกต้องซึ่งลงท้ายด้วย @tsu.ac.th';
                       }
                       return null; // Valid input
                     },
@@ -165,10 +171,12 @@ class _AddUserPageState extends State<AddUserPage> {
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           register();
+                        } else {
+                          _showErrorDialog('Add user Failed');
                         }
                       },
                       child: Text(
-                        'Submit',
+                        'ยืนยัน',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -184,6 +192,12 @@ class _AddUserPageState extends State<AddUserPage> {
         ),
       ),
     );
+  }
+
+  void cleartextfield() {
+    _usernameController.clear();
+    _passwordController.clear();
+    _emailController.clear();
   }
 
   Widget _buildTextField({

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project_t_ping/controllers/std_Controller.dart';
 import 'package:project_t_ping/models/std_model.dart';
+import 'package:project_t_ping/views/form_page.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -234,6 +236,7 @@ class _ListCardState extends State<ListCard> {
       }
     } catch (e) {
       _showSaveFailedDialog(context);
+      _showErrorDialog('Error: $e');
     }
   }
 
@@ -313,31 +316,28 @@ class _ListCardState extends State<ListCard> {
     String? refreshToken = userProvider.refreshToken;
 
     // Show confirmation dialog using QuickAlert
-    final confirmed = await QuickAlert.show(
+    QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
       title: 'Confirm Deletion',
       text: 'Are you sure you want to delete this ID: $stdid?',
       confirmBtnText: 'Delete',
       cancelBtnText: 'Cancel',
-      onConfirmBtnTap: () {
-        Navigator.of(context).pop(true); // Close dialog and return true
+      onConfirmBtnTap: () async {
+        Navigator.of(context).pop();
+        try {
+          await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
+          _fetchAllstudents();
+          _showSuccessDialog(context, 'Student deleted successfully!');
+          Navigator.of(context).pop();
+        } catch (e) {
+          _showErrorDialog('Failed to delete student: $e');
+        }
       },
       onCancelBtnTap: () {
-        Navigator.of(context).pop(false); // Close dialog and return false
+        Navigator.of(context).pop();
       },
     );
-
-    if (confirmed == true) {
-      try {
-        await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
-        _fetchAllstudents();
-        _showSuccessDialog(context, 'Student deleted successfully!');
-        Navigator.of(context).pop();
-      } catch (e) {
-        _showErrorDialog('Failed to delete student: $e');
-      }
-    }
   }
 
   void _editStudentDetails(studentInfo student) async {
@@ -387,111 +387,181 @@ class _ListCardState extends State<ListCard> {
           content: SingleChildScrollView(
             child: Column(
               children: [
-                buildTextField(
-                    controller: stdIdController,
-                    labelText: 'รหัสนิสิต',
-                    readOnly: true),
-                SizedBox(height: 8),
-                _buildDropdown<int>(
-                  label: 'เลือกคำนำหน้า',
-                  items: _Prefix,
-                  value: _selectedPrefix,
-                  onChanged: (value) {
+                _buildTextField(
+                  stdIdController,
+                  '*รหัสนิสิต',
+                  'กรุณากรอกรหัสนิสิต',
+                  InputType.number,
+                  maxLength: 10,
+                  readOnly: true,
+                ),
+                _buildDropdownForForm(
+                  'คำนำหน้า',
+                  _Prefix,
+                  _selectedPrefix,
+                  (value) {
                     setState(() {
                       _selectedPrefix = value;
                     });
                   },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'กรุณาเลือก';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: fnameController, labelText: 'First Name'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: lnameController, labelText: 'Last Name'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: nicknameController, labelText: 'Nickname'),
-                SizedBox(height: 8),
-                _buildDropdown<int>(
-                  label: 'เลือกศาสนา', // "Select Religion"
-                  items: _Religions,
-                  value: _selectedReligion,
-                  onChanged: (value) {
+                _buildTextField(
+                  fnameController,
+                  '*ชื่อ',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildTextField(
+                  lnameController,
+                  '*นามสกุล',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildTextField(
+                  nicknameController,
+                  '*ชื่อเล่น',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 20,
+                ),
+                _buildTelField(
+                  telController,
+                  '*เบอร์โทรศัพท์',
+                  'กรุณากรอก',
+                  InputType.phone,
+                  maxLength: 10,
+                ),
+                _buildDropdownForForm(
+                  'ศาสนา',
+                  _Religions,
+                  _selectedReligion,
+                  (value) {
                     setState(() {
                       _selectedReligion = value;
                     });
                   },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'กรุณาเลือก';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(height: 8),
-                _buildDropdown<int>(
-                  label: 'เลือกวิชาเอก', // "Select Major"
-                  items: _Majors,
-                  value: _selectedMajor,
-                  onChanged: (value) {
+                _buildDropdownForForm(
+                  'วิชาเอก',
+                  _Majors,
+                  _selectedMajor,
+                  (value) {
                     setState(() {
                       _selectedMajor = value;
                     });
                   },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'กรุณาเลือก';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: telController,
-                    labelText: 'Phone Number',
-                    keyboardType: TextInputType.phone),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: schNameController, labelText: 'School Name'),
-                SizedBox(height: 8),
-                _buildDropdown<int>(
-                  label: 'เลือกจังหวัด', // "Select Major"
-                  items: _ThaiProvinces,
-                  value: _selectedProvince,
-                  onChanged: (value) {
+                _buildTextField(
+                  schNameController,
+                  '*ชื่อโรงเรียนที่สำเร็จการศึกษา',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildProvinceDropdown(
+                  _selectedProvince,
+                  (value) {
                     setState(() {
                       _selectedProvince = value;
                     });
                   },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'กรุณาเลือกจังหวัด'; // "Please select a province"
+                    }
+                    return null; // No validation error
+                  },
                 ),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: fatherNameController,
-                    labelText: 'Father\'s Name'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: fatherTelController,
-                    labelText: 'Father\'s Phone'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: motherNameController,
-                    labelText: 'Mother\'s Name'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: motherTelController,
-                    labelText: 'Mother\'s Phone'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: parentNameController,
-                    labelText: 'Guardian\'s Name'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: parentTelController,
-                    labelText: 'Guardian\'s Phone'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: parentRelaController,
-                    labelText: 'Relationship'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: allergicThingsController,
-                    labelText: 'Allergic Things'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: allergicDrugsController,
-                    labelText: 'Allergic Drugs'),
-                SizedBox(height: 8),
-                buildTextField(
-                    controller: allergicConditionController,
-                    labelText: 'Allergic Condition'),
+                _buildTextField(
+                  fatherNameController,
+                  '*ชื่อบิดา',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildTelField(
+                  fatherTelController,
+                  '*เบอร์โทรศัพท์',
+                  'กรุณากรอก',
+                  InputType.phone,
+                  maxLength: 10,
+                ),
+                _buildTextField(
+                  motherNameController,
+                  '*ชื่อมารดา',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildTelField(
+                  motherTelController,
+                  '*เบอร์โทรศัพท์',
+                  'กรุณากรอก',
+                  InputType.phone,
+                  maxLength: 10,
+                ),
+                _buildTextField(
+                  parentNameController,
+                  'ชื่อผู้ปกครอง',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 50,
+                ),
+                _buildTelField(
+                  parentTelController,
+                  'เบอร์โทรศัพท์',
+                  'กรุณากรอก',
+                  InputType.phone,
+                  maxLength: 10,
+                ),
+                _buildTextField(
+                  parentRelaController,
+                  'ความสัมพันธ์ของนิสิต',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 30,
+                ),
+                _buildTextField(
+                  allergicThingsController,
+                  'อาหารที่แพ้*',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 100,
+                ),
+                _buildTextField(
+                  allergicDrugsController,
+                  'ยาที่แพ้*',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 100,
+                ),
+                _buildTextField(
+                  allergicConditionController,
+                  'ประวัติการแพทย์*',
+                  'กรุณากรอก',
+                  InputType.text,
+                  maxLength: 100,
+                ),
               ],
             ),
           ),
@@ -611,6 +681,7 @@ class _ListCardState extends State<ListCard> {
           context, 'The student information has been successfully updated.');
     } catch (e) {
       print('Error deleting student: $e');
+      _showErrorDialog('updat Failed.');
     }
   }
 
@@ -886,25 +957,6 @@ class _ListCardState extends State<ListCard> {
     );
   }
 
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    TextInputType keyboardType = TextInputType.text,
-    bool readOnly = false,
-    int? maxLength,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(),
-      ),
-      keyboardType: keyboardType,
-      readOnly: readOnly,
-      maxLength: maxLength,
-    );
-  }
-
   DropdownButtonFormField<T> _buildDropdown<T>({
     required String label,
     required Map<int, String> items,
@@ -981,7 +1033,7 @@ class _ListCardState extends State<ListCard> {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Add Student',
+            'เพิ่มข้อมูลนักเรียน',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -997,7 +1049,7 @@ class _ListCardState extends State<ListCard> {
                     _stdIdController,
                     '*รหัสนิสิต',
                     'กรุณากรอกรหัสนิสิต',
-                    TextInputType.number,
+                    InputType.number,
                     maxLength: 10,
                   ),
                   _buildDropdownForForm(
@@ -1020,28 +1072,28 @@ class _ListCardState extends State<ListCard> {
                     _stdFnameController,
                     '*ชื่อ',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 50,
                   ),
                   _buildTextField(
                     _stdLnameController,
                     '*นามสกุล',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 50,
                   ),
                   _buildTextField(
                     _stdNicknameController,
                     '*ชื่อเล่น',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 20,
                   ),
-                  _buildTextField(
+                  _buildTelField(
                     _stdTelController,
                     '*เบอร์โทรศัพท์',
                     'กรุณากรอก',
-                    TextInputType.phone,
+                    InputType.phone,
                     maxLength: 10,
                   ),
                   _buildDropdownForForm(
@@ -1080,7 +1132,7 @@ class _ListCardState extends State<ListCard> {
                     _schNameController,
                     '*ชื่อโรงเรียนที่สำเร็จการศึกษา',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 50,
                   ),
                   _buildProvinceDropdown(
@@ -1101,70 +1153,70 @@ class _ListCardState extends State<ListCard> {
                     _stdFatherNameController,
                     '*ชื่อบิดา',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 50,
                   ),
-                  _buildTextField(
+                  _buildTelField(
                     _stdFatherTelController,
                     '*เบอร์โทรศัพท์',
                     'กรุณากรอก',
-                    TextInputType.phone,
+                    InputType.phone,
                     maxLength: 10,
                   ),
                   _buildTextField(
                     _stdMotherNameController,
                     '*ชื่อมารดา',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 50,
                   ),
-                  _buildTextField(
+                  _buildTelField(
                     _stdMotherTelController,
                     '*เบอร์โทรศัพท์',
                     'กรุณากรอก',
-                    TextInputType.phone,
+                    InputType.phone,
                     maxLength: 10,
                   ),
                   _buildTextField(
                     _stdParentNameController,
                     'ชื่อผู้ปกครอง',
-                    null,
-                    TextInputType.text,
+                    'กรุณากรอก',
+                    InputType.text,
                     maxLength: 50,
                   ),
-                  _buildTextField(
+                  _buildTelField(
                     _stdParentTelController,
                     'เบอร์โทรศัพท์',
-                    null,
-                    TextInputType.phone,
+                    'กรุณากรอก',
+                    InputType.phone,
                     maxLength: 10,
                   ),
                   _buildTextField(
                     _stdParentRelaController,
                     'ความสัมพันธ์ของนิสิต',
-                    null,
-                    TextInputType.text,
+                    'กรุณากรอก',
+                    InputType.text,
                     maxLength: 30,
                   ),
                   _buildTextField(
                     _allergicThingsController,
                     'อาหารที่แพ้*',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 100,
                   ),
                   _buildTextField(
                     _allergicDrugsController,
                     'ยาที่แพ้*',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 100,
                   ),
                   _buildTextField(
                     _allergicConditionController,
                     'ประวัติการแพทย์*',
                     'กรุณากรอก',
-                    TextInputType.text,
+                    InputType.text,
                     maxLength: 100,
                   ),
                 ],
@@ -1176,15 +1228,17 @@ class _ListCardState extends State<ListCard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
               },
-              child: Text('Cancel', style: TextStyle(color: Colors.red)),
+              child: Text('ยกเลิก', style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   _showSaveConfirmationDialog(context);
+                } else {
+                  _showSaveFailedDialog(context);
                 }
               },
-              child: Text('Submit'),
+              child: Text('บันทึก'),
             ),
           ],
         );
@@ -1227,8 +1281,9 @@ class _ListCardState extends State<ListCard> {
     TextEditingController controller,
     String label,
     String? validationMessage,
-    TextInputType inputType, {
-    int? maxLength, // New optional parameter
+    InputType inputType, {
+    int? maxLength,
+    bool readOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -1238,11 +1293,66 @@ class _ListCardState extends State<ListCard> {
           labelText: label,
           counterText: '', // Hide the character counter
         ),
-        keyboardType: inputType,
+        keyboardType: inputType == InputType.number
+            ? TextInputType.number
+            : TextInputType.text,
         maxLength: maxLength, // Apply maxLength
+        readOnly: readOnly,
+        inputFormatters: inputType == InputType.number
+            ? [FilteringTextInputFormatter.digitsOnly] // Allow only digits
+            : inputType == InputType.phone
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d+()-\s]'))
+                  ] // Allow phone formats
+                : [
+                    FilteringTextInputFormatter.allow(RegExp(
+                        '[a-zA-Zก-ฮ\\u0E30-\\u0E4F \\- ]+')) // Allow only letters
+                  ],
         validator: (value) {
           if (validationMessage != null && (value == null || value.isEmpty)) {
             return validationMessage;
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildTelField(
+    TextEditingController controller,
+    String label,
+    String? validationMessage,
+    InputType inputType, {
+    int? maxLength,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          counterText: '', // Hide the character counter
+        ),
+        keyboardType: inputType == InputType.number
+            ? TextInputType.number
+            : TextInputType.text,
+        maxLength: maxLength, // Apply maxLength
+        inputFormatters: inputType == InputType.number
+            ? [FilteringTextInputFormatter.digitsOnly] // Allow only digits
+            : inputType == InputType.phone
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d+()-\s]'))
+                  ] // Allow phone formats
+                : [
+                    FilteringTextInputFormatter.allow(RegExp(
+                        '[a-zA-Zก-ฮ\\u0E30-\\u0E4F \\- ]+')) // Allow only letters
+                  ],
+        validator: (value) {
+          if (validationMessage != null && (value == null || value.isEmpty)) {
+            return validationMessage;
+          }
+          if (value != null && value.length != 10) {
+            return 'Input must be exactly 10 characters long.';
           }
           return null;
         },

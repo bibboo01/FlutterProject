@@ -314,9 +314,9 @@ class _StdFormState extends State<StdForm> {
               SizedBox(height: 16),
 
               // Telephone
-              _buildTextField(
+              _buildTelField(
                 _stdTelController,
-                'เบอร์โทรศัพท์*',
+                '*เบอร์โทรศัพท์',
                 'กรุณากรอก',
                 InputType.phone,
                 maxLength: 10,
@@ -381,7 +381,7 @@ class _StdFormState extends State<StdForm> {
               SizedBox(height: 16),
 
               // Father's Telephone
-              _buildTextField(
+              _buildTelField(
                 _stdFatherTelController,
                 '*เบอร์โทรศัพท์*',
                 'กรุณากรอก',
@@ -401,7 +401,7 @@ class _StdFormState extends State<StdForm> {
               SizedBox(height: 16),
 
               // Mother's Telephone
-              _buildTextField(
+              _buildTelField(
                 _stdMotherTelController,
                 '*เบอร์โทรศัพท์',
                 'กรุณากรอก',
@@ -413,18 +413,18 @@ class _StdFormState extends State<StdForm> {
               // Parent's Name
               _buildTextField(
                 _stdParentNameController,
-                'ชื่อผู้ปกครอง*',
-                null,
+                '*ชื่อผู้ปกครอง',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 50,
               ),
               SizedBox(height: 16),
 
               // Parent's Telephone
-              _buildTextField(
+              _buildTelField(
                 _stdParentTelController,
-                'เบอร์โทรศัพท์*',
-                null,
+                '*เบอร์โทรศัพท์',
+                'กรุณากรอก',
                 InputType.phone,
                 maxLength: 10,
               ),
@@ -433,8 +433,8 @@ class _StdFormState extends State<StdForm> {
               // Parent's Relationship
               _buildTextField(
                 _stdParentRelaController,
-                'ความสัมพันธ์ของนิสิต*',
-                null,
+                '*ความสัมพันธ์ของนิสิต',
+                'กรุณากรอก',
                 InputType.text,
                 maxLength: 30,
               ),
@@ -475,6 +475,8 @@ class _StdFormState extends State<StdForm> {
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
                     _showSaveConfirmationDialog(context);
+                  } else {
+                    _showErrorDialog('Save Failed');
                   }
                 },
                 child: Text(
@@ -548,6 +550,22 @@ class _StdFormState extends State<StdForm> {
     );
   }
 
+  void _showErrorDialog(String message) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      title: 'Warning',
+      text: message,
+      autoCloseDuration: const Duration(seconds: 3),
+      showConfirmBtn: true,
+      confirmBtnText: 'OK',
+      confirmBtnColor: Colors.redAccent,
+      onConfirmBtnTap: () {
+        Navigator.of(context).pop(); // Optional: Close the dialog
+      },
+    );
+  }
+
   Widget _buildTextField(
     TextEditingController controller,
     String label,
@@ -580,6 +598,48 @@ class _StdFormState extends State<StdForm> {
         validator: (value) {
           if (validationMessage != null && (value == null || value.isEmpty)) {
             return validationMessage;
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildTelField(
+    TextEditingController controller,
+    String label,
+    String? validationMessage,
+    InputType inputType, {
+    int? maxLength,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          counterText: '', // Hide the character counter
+        ),
+        keyboardType: inputType == InputType.number
+            ? TextInputType.number
+            : TextInputType.text,
+        maxLength: maxLength, // Apply maxLength
+        inputFormatters: inputType == InputType.number
+            ? [FilteringTextInputFormatter.digitsOnly] // Allow only digits
+            : inputType == InputType.phone
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d+()-\s]'))
+                  ] // Allow phone formats
+                : [
+                    FilteringTextInputFormatter.allow(RegExp(
+                        '[a-zA-Zก-ฮ\\u0E30-\\u0E4F \\- ]+')) // Allow only letters
+                  ],
+        validator: (value) {
+          if (validationMessage != null && (value == null || value.isEmpty)) {
+            return validationMessage;
+          }
+          if (value != null && value.length != 10) {
+            return 'Input must be exactly 10 characters long.';
           }
           return null;
         },

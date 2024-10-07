@@ -6,7 +6,6 @@ import 'package:project_t_ping/views/provider/userprovider.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import 'package:bcrypt/bcrypt.dart';
 
 class EditPage extends StatefulWidget {
   const EditPage({super.key});
@@ -62,14 +61,6 @@ class _EditPageState extends State<EditPage> {
       print('Error updating user: $e');
       _showErrorDialog('Failed to update user.');
     }
-  }
-
-  String hashPassword(String password) {
-    return BCrypt.hashpw(password, BCrypt.gensalt());
-  }
-
-  bool verifyPassword(String password, String hash) {
-    return BCrypt.checkpw(password, hash);
   }
 
   @override
