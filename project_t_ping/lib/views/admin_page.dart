@@ -26,11 +26,11 @@ class _AdminPageState extends State<AdminPage> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Warning',
+      title: 'คำเตือน',
       text: message,
       autoCloseDuration: const Duration(seconds: 3),
       showConfirmBtn: true,
-      confirmBtnText: 'OK',
+      confirmBtnText: 'โอเค',
       confirmBtnColor: Colors.redAccent,
       onConfirmBtnTap: () {
         Navigator.of(context).pop(); // Optional: Close the dialog
@@ -42,9 +42,9 @@ class _AdminPageState extends State<AdminPage> {
     QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        title: 'Successful',
+        title: 'ประสบความสำเร็จ',
         text: message, // Custom message
-        confirmBtnText: 'OK',
+        confirmBtnText: 'โอเค',
         onConfirmBtnTap: () {
           Navigator.pop(context); // Close the dialog
         },
@@ -82,10 +82,10 @@ class _AdminPageState extends State<AdminPage> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
-      title: 'Confirm Deletion',
-      text: 'Are you sure you want to delete $username?',
-      confirmBtnText: 'Delete',
-      cancelBtnText: 'Cancel',
+      title: 'ยืนยันการลบ',
+      text: 'คุณแน่ใจหรือไม่ว่าต้องการลบ $username?',
+      confirmBtnText: 'ลบ',
+      cancelBtnText: 'ยกเลิก',
       confirmBtnColor: Colors.red,
       onConfirmBtnTap: () async {
         Navigator.of(context).pop(); // Close the alert
@@ -93,10 +93,10 @@ class _AdminPageState extends State<AdminPage> {
           await Usercontroller()
               .delUser(context, id, accessToken!, refreshToken!);
           _fetchAlluser();
-          _showSuccessDialog(context, 'Deleted successfully!');
+          _showSuccessDialog(context, 'ลบเรียบร้อยแล้ว!');
         } catch (e) {
           print(e);
-          _showErrorDialog('Failed to delete user: $e');
+          _showErrorDialog('ไม่สามารถลบผู้ใช้: $e');
         }
       },
       onCancelBtnTap: () {
@@ -122,19 +122,32 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Dashboard'),
+        title: Text(
+          'แดชบอร์ดผู้ดูแลระบบ',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Colors.blueAccent,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
             onPressed: () {
               Navigator.pushNamed(context, '/adduserPage');
             },
           ),
           Builder(builder: (context) {
             return IconButton(
-              icon: Icon(Icons.menu),
+              icon: Icon(
+                Icons.menu,
+                color: Colors.white,
+              ),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -148,7 +161,7 @@ class _AdminPageState extends State<AdminPage> {
         child: Column(
           children: <Widget>[
             Text(
-              'User List',
+              'รายชื่อผู้ใช้',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -170,7 +183,7 @@ class _AdminPageState extends State<AdminPage> {
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Text(
-                                  "Role: ${setrole(fetchuser.role)}",
+                                  "สถานะ: ${setrole(fetchuser.role)}",
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                                 trailing: Row(
@@ -212,9 +225,9 @@ class _AdminPageState extends State<AdminPage> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.success,
-      title: 'Logout Successful',
-      text: 'You have been logged out successfully.',
-      confirmBtnText: 'OK',
+      title: 'ออกจากระบบสำเร็จ',
+      text: 'คุณออกจากระบบเรียบร้อยแล้ว',
+      confirmBtnText: 'โอเคร',
       confirmBtnColor: Colors.blue,
       onConfirmBtnTap: () {
         Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
@@ -240,16 +253,16 @@ class _AdminPageState extends State<AdminPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome $name',
+                  '$name',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Email: $email',
+                  'อีเมล: $email',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -257,7 +270,7 @@ class _AdminPageState extends State<AdminPage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Role: ${setrole(role)}',
+                  'สถานะ: ${setrole(role)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -268,21 +281,21 @@ class _AdminPageState extends State<AdminPage> {
           ),
           ListTile(
             leading: Icon(Icons.person),
-            title: Text('Student Form'),
+            title: Text('แบบฟอร์มนิสิต'),
             onTap: () {
               Navigator.pushNamed(context, '/Student');
             },
           ),
           ListTile(
             leading: Icon(Icons.library_books),
-            title: Text('Report'),
+            title: Text('รายงาน'),
             onTap: () {
               Navigator.pushNamed(context, '/reqadmin');
             },
           ),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text('Logout'),
+            title: Text('ออกจากระบบ'),
             onTap: () {
               _logout(context);
             },
@@ -290,7 +303,7 @@ class _AdminPageState extends State<AdminPage> {
           Divider(), // Optional divider for better separation
           ListTile(
             title: Text(
-              'Contact Us',
+              'ติดต่อเรา',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

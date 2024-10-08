@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:project_t_ping/controllers/std_Controller.dart';
 import 'package:project_t_ping/models/std_model.dart';
 import 'package:project_t_ping/views/provider/userprovider.dart';
@@ -13,21 +13,19 @@ class ChartTooltip extends StatefulWidget {
 }
 
 class _ChartTooltipState extends State<ChartTooltip> {
-  late int showingTooltip;
   List<studentInfo> _students = [];
   bool _isLoading = true;
   String? _errorMessage;
-  int _studentCount2022 = 0;
-  int _studentCount2023 = 0;
-  int _studentCount2024 = 0;
-  int _studentCount2025 = 0;
-  int _studentCount2026 = 0;
-  int _studentCount2027 = 0;
+  int _studentCount1 = 0;
+  int _studentCount2 = 0;
+  int _studentCount3 = 0;
+  int _studentCount4 = 0;
+  int _studentCount5 = 0;
+  int _studentCount7 = 0;
 
   @override
   void initState() {
     super.initState();
-    showingTooltip = -1;
     _fetchAllStudents();
   }
 
@@ -53,22 +51,22 @@ class _ChartTooltipState extends State<ChartTooltip> {
 
   void _calculateStudentCounts() {
     setState(() {
-      _studentCount2022 = _students
+      _studentCount1 = _students
           .where((student) => student.stdInfo.stdId.startsWith('65'))
           .length;
-      _studentCount2023 = _students
+      _studentCount2 = _students
           .where((student) => student.stdInfo.stdId.startsWith('66'))
           .length;
-      _studentCount2024 = _students
+      _studentCount3 = _students
           .where((student) => student.stdInfo.stdId.startsWith('67'))
           .length;
-      _studentCount2025 = _students
+      _studentCount4 = _students
           .where((student) => student.stdInfo.stdId.startsWith('68'))
           .length;
-      _studentCount2026 = _students
+      _studentCount5 = _students
           .where((student) => student.stdInfo.stdId.startsWith('69'))
           .length;
-      _studentCount2027 = _students
+      _studentCount7 = _students
           .where((student) => student.stdInfo.stdId.startsWith('70'))
           .length;
     });
@@ -113,78 +111,38 @@ class _ChartTooltipState extends State<ChartTooltip> {
   }
 
   Widget _buildBarChart() {
-    return AspectRatio(
-      aspectRatio: 2,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          barTouchData: BarTouchData(
-            enabled: true,
-            handleBuiltInTouches: true,
-            touchCallback: (event, response) {
-              if (response != null &&
-                  response.spot != null &&
-                  event is FlTapUpEvent) {
-                setState(() {
-                  final x = response.spot!.touchedBarGroup.x;
-                  showingTooltip = showingTooltip == x ? -1 : x;
-                });
-              }
-            },
+    List<ChartData> chartData = [
+      ChartData(year: '2565', count: _studentCount1),
+      ChartData(year: '2566', count: _studentCount2),
+      ChartData(year: '2567', count: _studentCount3),
+      ChartData(year: '2568', count: _studentCount4),
+      ChartData(year: '2569', count: _studentCount5),
+      ChartData(year: '2570', count: _studentCount7),
+    ];
+
+    return SizedBox(
+      height: 300,
+      child: SfCartesianChart(
+        primaryXAxis: CategoryAxis(),
+        primaryYAxis: NumericAxis(),
+        series: <CartesianSeries<ChartData, String>>[
+          ColumnSeries<ChartData, String>(
+            dataSource: chartData,
+            xValueMapper: (ChartData data, _) => data.year,
+            yValueMapper: (ChartData data, _) => data.count,
+            borderRadius: BorderRadius.circular(10), // Set corner radius
+            dataLabelSettings: DataLabelSettings(isVisible: true),
+            color: Colors.blue,
           ),
-          titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  switch (value.toInt()) {
-                    case 0:
-                      return Text('2022');
-                    case 1:
-                      return Text('2023');
-                    case 2:
-                      return Text('2024');
-                    case 3:
-                      return Text('2025');
-                    case 4:
-                      return Text('2026');
-                    case 5:
-                      return Text('2027');
-                    default:
-                      return Text('');
-                  }
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true),
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          barGroups: [
-            _buildBarGroup(0, _studentCount2022, Colors.blue),
-            _buildBarGroup(1, _studentCount2023, Colors.green),
-            _buildBarGroup(2, _studentCount2024, Colors.red),
-            _buildBarGroup(3, _studentCount2025, Colors.orange),
-            _buildBarGroup(4, _studentCount2026, Colors.yellow),
-            _buildBarGroup(5, _studentCount2027, Colors.lime),
-          ],
-        ),
+        ],
       ),
     );
   }
+}
 
-  BarChartGroupData _buildBarGroup(int x, int count, Color color) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: count.toDouble(),
-          color: color,
-          width: 20,
-        ),
-      ],
-      showingTooltipIndicators: showingTooltip == x ? [0] : [],
-    );
-  }
+class ChartData {
+  final String year;
+  final int count;
+
+  ChartData({required this.year, required this.count});
 }

@@ -55,10 +55,11 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Home',
+          'รายงาน',
           style: TextStyle(
-            color: Colors.white,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         automaticallyImplyLeading: false,
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               children: [
                 Text(
-                  'Dashboard',
+                  'แดชบอร์ด',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -124,16 +125,16 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome $name',
+                  '$name',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Email: $email',
+                  'อีเมล: $email',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -141,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Role: ${_setRole(role)}',
+                  'สถานะ: ${_setRole(role)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -152,7 +153,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text('Logout'),
+            title: Text('ออกจากระบบ'),
             onTap: () {
               _logout(context);
             },
@@ -160,7 +161,7 @@ class _HomePageState extends State<HomePage> {
           Divider(),
           ListTile(
             title: Text(
-              'Contact Us',
+              'ติดต่อเรา',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

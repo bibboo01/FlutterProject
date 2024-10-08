@@ -40,10 +40,11 @@ class _ReqadminState extends State<Reqadmin> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Home',
+          'รายงาน',
           style: TextStyle(
-            color: Colors.white,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         automaticallyImplyLeading: false,
@@ -126,7 +127,7 @@ class _ReqadminState extends State<Reqadmin> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome $name',
+                  '$name',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

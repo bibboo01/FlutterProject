@@ -55,11 +55,10 @@ class _EditPageState extends State<EditPage> {
       await Usercontroller().updateUser(context, id, username, email,
           _selectRole!, accessToken!, refreshToken!);
       Navigator.pushNamed(context, '/admin');
-      _showSuccessDialog(
-          context, 'The List User has been successfully updated.');
+      _showSuccessDialog(context, 'ผู้ใช้รายการได้รับการอัปเดตเรียบร้อยแล้ว');
     } catch (e) {
-      print('Error updating user: $e');
-      _showErrorDialog('Failed to update user.');
+      print('เกิดข้อผิดพลาดในการอัปเดตผู้ใช้: $e');
+      _showErrorDialog('ไม่สามารถอัปเดตผู้ใช้');
     }
   }
 
@@ -67,7 +66,7 @@ class _EditPageState extends State<EditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit User'),
+        title: const Text('แก้ไขผู้ใช้'),
         centerTitle: true,
       ),
       body: Padding(
@@ -77,24 +76,27 @@ class _EditPageState extends State<EditPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Edit User Details',
+                'แก้ไขรายละเอียดผู้ใช้',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _usernameController,
-                label: 'Username',
-                hint: 'Enter your username',
+                label: 'ชื่อผู้ใช้',
+                hint: 'กรอกชื่อผู้ใช้ของคุณ',
                 inputType: TextInputType.text,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]'))
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a username';
+                    return 'กรุณากรอกชื่อผู้ใช้';
                   }
                   if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                    return 'Username can only contain letters';
+                    return 'ชื่อผู้ใช้ต้องมีตัวอักษรเท่านั้น';
+                  }
+                  if (value.length <= 10) {
+                    return 'ต้องมีตัวอักษร 10 ตัวขึ้นไป';
                   }
                   return null; // Valid input
                 },
@@ -102,8 +104,8 @@ class _EditPageState extends State<EditPage> {
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _emailController,
-                label: 'Email',
-                hint: 'Enter your email',
+                label: 'อีเมล',
+                hint: 'ใส่อีเมลของคุณ',
                 inputType: TextInputType.emailAddress,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
@@ -111,11 +113,11 @@ class _EditPageState extends State<EditPage> {
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an email';
+                    return 'กรุณากรอกอีเมล์';
                   }
                   if (!RegExp(r'^[a-zA-Z0-9._%+-]+@tsu\.ac\.th$')
                       .hasMatch(value)) {
-                    return 'Please enter a valid email address ending with @tsu.ac.th';
+                    return 'กรุณากรอกที่อยู่อีเมลที่ถูกต้องซึ่งลงท้ายด้วย @tsu.ac.th';
                   }
                   return null; // Valid input
                 },
@@ -124,7 +126,7 @@ class _EditPageState extends State<EditPage> {
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
                 value: _valueRole,
-                hint: const Text('Select Role'),
+                hint: const Text('เลือกสถานะ'),
                 items: _roles.entries
                     .map((entry) => DropdownMenuItem<int>(
                           value: entry.key,
@@ -156,7 +158,7 @@ class _EditPageState extends State<EditPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 12),
                   ),
-                  child: const Text('Save Changes'),
+                  child: const Text('บันทึกการเปลี่ยนแปลง'),
                 ),
               ),
             ],
@@ -170,9 +172,9 @@ class _EditPageState extends State<EditPage> {
     QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        title: 'Successful',
+        title: 'สำเร็จ',
         text: message,
-        confirmBtnText: 'OK',
+        confirmBtnText: 'โอเค',
         onConfirmBtnTap: () {
           Navigator.pop(context);
         },

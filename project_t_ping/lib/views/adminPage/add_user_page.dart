@@ -24,10 +24,10 @@ class _AddUserPageState extends State<AddUserPage> {
 
     try {
       await AuthService().register(username, password, email);
-      _showSuccessDialog(context, 'Add user successful');
+      _showSuccessDialog(context, 'เพิ่มผู้ใช้สำเร็จ');
       cleartextfield();
     } catch (e) {
-      _showErrorDialog('Add user Failed ');
+      _showErrorDialog('เพิ่มผู้ใช้ล้มเหลว');
       print(e);
     }
   }
@@ -36,9 +36,9 @@ class _AddUserPageState extends State<AddUserPage> {
     QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        title: 'Successful',
+        title: 'สำเร็จ',
         text: message, // Custom message
-        confirmBtnText: 'OK',
+        confirmBtnText: 'โอเค',
         onConfirmBtnTap: () {
           Navigator.pushReplacementNamed(context, '/admin');
         },
@@ -65,7 +65,14 @@ class _AddUserPageState extends State<AddUserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add User'),
+        title: Text(
+          'เพิ่มผู้ใช้',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Colors.blueAccent,
       ),
       body: SingleChildScrollView(

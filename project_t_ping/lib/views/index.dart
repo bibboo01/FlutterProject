@@ -158,10 +158,10 @@ class _IndexPageState extends State<IndexPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome to',
+                  'ยินดีต้อนรับสู่',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -178,7 +178,7 @@ class _IndexPageState extends State<IndexPage> {
           ),
           ListTile(
             leading: Icon(Icons.person),
-            title: Text('Student Form'),
+            title: Text('แบบฟอร์มนิสิต'),
             onTap: () {
               Navigator.pushNamed(context, '/Student');
             },
@@ -196,7 +196,7 @@ class _IndexPageState extends State<IndexPage> {
           Divider(),
           ListTile(
             title: Text(
-              'Contact Us',
+              'ติดต่อเรา',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

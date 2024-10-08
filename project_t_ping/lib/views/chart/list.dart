@@ -228,7 +228,7 @@ class _ListCardState extends State<ListCard> {
           refreshToken!);
       if (result == null) {
         Navigator.of(context).pop();
-        _showSuccessDialog(context, 'Student saved successfully!');
+        _showSuccessDialog(context, 'บันทึกนักเรียนสำเร็จแล้ว!');
         _fetchAllstudents();
         _clearForm();
       } else {
@@ -319,19 +319,18 @@ class _ListCardState extends State<ListCard> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
-      title: 'Confirm Deletion',
-      text: 'Are you sure you want to delete this ID: $stdid?',
-      confirmBtnText: 'Delete',
-      cancelBtnText: 'Cancel',
+      title: 'ยืนยันการลบ',
+      text: 'คุณแน่ใจหรือไม่ว่าต้องการลบ ID นี้: $stdid?',
+      confirmBtnText: 'ลบ',
+      cancelBtnText: 'ยกเลิก',
       onConfirmBtnTap: () async {
         Navigator.of(context).pop();
         try {
           await StdInfo().delstd(context, stdid, accessToken!, refreshToken!);
           _fetchAllstudents();
-          _showSuccessDialog(context, 'Student deleted successfully!');
-          Navigator.of(context).pop();
+          _showSuccessDialog(context, 'ลบนักเรียนเรียบร้อยแล้ว!');
         } catch (e) {
-          _showErrorDialog('Failed to delete student: $e');
+          _showErrorDialog('ไม่สามารถลบนักเรียน: $e');
         }
       },
       onCancelBtnTap: () {
@@ -383,7 +382,7 @@ class _ListCardState extends State<ListCard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Student Details'),
+          title: Text('แก้ไขรายละเอียดนิสิต'),
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -570,7 +569,7 @@ class _ListCardState extends State<ListCard> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('ยกเลิก'),
             ),
             TextButton(
               onPressed: () async {
@@ -617,7 +616,7 @@ class _ListCardState extends State<ListCard> {
                     allergicCondition);
                 Navigator.of(context).pop();
               },
-              child: Text('Save'),
+              child: Text('บันทึก'),
             ),
           ],
         );
@@ -806,7 +805,7 @@ class _ListCardState extends State<ListCard> {
                         ),
                       ),
                       child: Text(
-                        'Edit',
+                        'แก้ไข',
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -826,7 +825,7 @@ class _ListCardState extends State<ListCard> {
                         ),
                       ),
                       child: Text(
-                        'Delete',
+                        'ลบ',
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -936,7 +935,7 @@ class _ListCardState extends State<ListCard> {
                             });
                           }
                         : null,
-                    child: Text('Previous'),
+                    child: Text('ก่อนหน้า'),
                   ),
                   ElevatedButton(
                     onPressed: _currentPage < totalPages - 1
@@ -946,7 +945,7 @@ class _ListCardState extends State<ListCard> {
                             });
                           }
                         : null,
-                    child: Text('Next'),
+                    child: Text('ถัดไป'),
                   ),
                 ],
               ),
@@ -998,7 +997,7 @@ class _ListCardState extends State<ListCard> {
                 : errorMessage != null
                     ? Center(child: Text(errorMessage))
                     : students.isEmpty // Check for empty list
-                        ? Center(child: Text('No students found.'))
+                        ? Center(child: Text('ไม่พบนิสิต'))
                         : ListView.builder(
                             shrinkWrap: true,
                             physics:
@@ -1250,9 +1249,9 @@ class _ListCardState extends State<ListCard> {
     QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        title: 'Successful',
+        title: 'สำเร็จ',
         text: message, // Custom message
-        confirmBtnText: 'OK',
+        confirmBtnText: 'โอเค',
         onConfirmBtnTap: () {
           Navigator.pop(context); // Close the dialog
           _fetchAllstudents();
@@ -1264,11 +1263,11 @@ class _ListCardState extends State<ListCard> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Warning',
+      title: 'คำเตือน',
       text: message,
       autoCloseDuration: const Duration(seconds: 3),
       showConfirmBtn: true,
-      confirmBtnText: 'OK',
+      confirmBtnText: 'โอเค',
       confirmBtnColor: Colors.redAccent,
       onConfirmBtnTap: () {
         Navigator.of(context).pop(); // Optional: Close the dialog
@@ -1396,10 +1395,10 @@ class _ListCardState extends State<ListCard> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
-      title: 'Confirm Save',
-      text: 'Do you want to save the changes?',
-      confirmBtnText: 'Save',
-      cancelBtnText: 'Cancel',
+      title: 'ยืนยันการบันทึก',
+      text: 'คุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?',
+      confirmBtnText: 'บันทึก',
+      cancelBtnText: 'ยกเลิก',
       onCancelBtnTap: () {
         Navigator.pop(context); // Close the dialog
       },
@@ -1417,9 +1416,9 @@ class _ListCardState extends State<ListCard> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Save Failed',
-      text: 'There was an error saving your changes. Please try again.',
-      confirmBtnText: 'OK',
+      title: 'บันทึกล้มเหลว',
+      text: 'เกิดข้อผิดพลาดในการบันทึกการเปลี่ยนแปลงของคุณ โปรดลองอีกครั้ง',
+      confirmBtnText: 'โอเค',
       onConfirmBtnTap: () {
         Navigator.pop(context); // Close the dialog
       },

@@ -41,9 +41,15 @@ class _RegisterPageState extends State<RegisterPage> {
         text: message,
         confirmBtnText: 'OK',
         onConfirmBtnTap: () {
-          Navigator.pop(context);
+          Navigator.pushReplacementNamed(context, '/login');
         },
         autoCloseDuration: Duration(seconds: 2));
+  }
+
+  void cleartextfailed() {
+    _usernameController.clear();
+    _passwordController.clear();
+    _emailController.clear();
   }
 
   void register() async {
@@ -53,8 +59,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       await AuthService().register(username, password, email);
-      _showSuccessDialog(context, 'Register successful');
-      Navigator.pushReplacementNamed(context, '/login');
+      _showSuccessDialog(context, 'ลงทะเบียนสำเร็จ');
+      cleartextfailed();
     } catch (e) {
       print(e);
       _showErrorDialog('Error: $e');
@@ -116,7 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 50,
                       ),
                       Text(
-                        'Create an Account',
+                        'สร้างบัญชี',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -208,10 +214,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (_formKey.currentState?.validate() ?? false) {
                             register();
                           } else {
-                            _showErrorDialog('Registration failed');
+                            _showErrorDialog('การลงทะเบียนล้มเหลว');
                           }
                         },
-                        child: Text('Register'),
+                        child: Text('ลงทะเบียน'),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(horizontal: 50),
                           shape: RoundedRectangleBorder(
@@ -224,7 +230,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/login');
                         },
-                        child: Text('Already have an account? Login'),
+                        child: Text('มีบัญชีอยู่แล้ว? เข้าสู่ระบบ'),
                       ),
                     ],
                   ),

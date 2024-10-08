@@ -106,7 +106,7 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin'),
+        title: Text('ผู้ดูแลระบบ'),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(

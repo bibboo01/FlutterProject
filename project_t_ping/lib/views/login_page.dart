@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.clear();
       } catch (e) {
         print(e);
-        _showErrorDialog('Login Failed');
+        _showErrorDialog('การเข้าสู่ระบบล้มเหลว');
       }
     }
   }
@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.loading,
-      text: 'Waiting for confirmation from the system',
+      text: 'รอการยืนยันจากระบบ',
       autoCloseDuration:
           Duration(seconds: 5), // Automatically close after 2 seconds
     );
@@ -64,8 +64,9 @@ class _LoginPageState extends State<LoginPage> {
       QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        title: 'Login Successful',
-        text: 'Welcome $name to the page!',
+        title: 'เข้าสู่ระบบสำเร็จ',
+        text: 'ยินดีต้อนรับ $name สู่เพจ!',
+        confirmBtnText: 'โอเค',
         autoCloseDuration: const Duration(seconds: 3),
         showConfirmBtn: true,
       );
@@ -78,11 +79,11 @@ class _LoginPageState extends State<LoginPage> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Warning',
+      title: 'คำเตือน',
       text: message,
       autoCloseDuration: const Duration(seconds: 3),
       showConfirmBtn: true,
-      confirmBtnText: 'OK',
+      confirmBtnText: 'โอเค',
       confirmBtnColor: Colors.redAccent,
       onConfirmBtnTap: () {
         Navigator.of(context).pop(); // Optional: Close the dialog
@@ -148,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _usernameController,
                         decoration: InputDecoration(
-                          labelText: 'Username',
+                          labelText: 'ชื่อผู้ใช้',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person),
                           filled: true,
@@ -156,7 +157,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your username';
+                            return 'กรุณากรอกชื่อผู้ใช้ของคุณ';
+                          }
+                          if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                            return 'ชื่อผู้ใช้ต้องมีตัวอักษรเท่านั้น';
                           }
                           return null;
                         },
@@ -166,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                         controller: _passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'รหัสผ่าน',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.lock),
                           filled: true,
@@ -174,7 +178,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'กรุณากรอกรหัสผ่านของคุณ';
+                          }
+                          if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])')
+                              .hasMatch(value)) {
+                            return 'รหัสผ่านจะต้องมีทั้งตัวอักษรและตัวเลข';
                           }
                           return null;
                         },
@@ -182,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: _login,
-                        child: Text('Login'),
+                        child: Text('เข้าสู่ระบบ'),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(horizontal: 50),
                           shape: RoundedRectangleBorder(
@@ -194,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/Register');
                         },
-                        child: Text('Don\'t have an account? Register'),
+                        child: Text('ยังไม่มีบัญชี? ลงทะเบียน'),
                       ),
                     ],
                   ),

@@ -187,14 +187,11 @@ class _StdFormState extends State<StdForm> {
           allergicDrugs,
           allergicCondition);
       if (result == null) {
-        showSuccessAlert(context, 'Save successful!');
-        Navigator.pushReplacementNamed(context, '/');
+        showSuccessAlert(context, 'บันทึกสำเร็จ!');
+        Navigator.of(context).pop();
         _clearForm();
       } else {
         _showSaveFailedDialog(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result)),
-        );
       }
     } catch (e) {
       print(e);
@@ -233,7 +230,7 @@ class _StdFormState extends State<StdForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Student Information Form',
+          'แบบฟอร์มข้อมูลนิสิต',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -476,11 +473,11 @@ class _StdFormState extends State<StdForm> {
                   if (_formKey.currentState?.validate() ?? false) {
                     _showSaveConfirmationDialog(context);
                   } else {
-                    _showErrorDialog('Save Failed');
+                    _showErrorDialog('บันทึกล้มเหลว');
                   }
                 },
                 child: Text(
-                  'Submit',
+                  'บันทึก',
                   style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -506,9 +503,9 @@ class _StdFormState extends State<StdForm> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Save Failed',
-      text: 'There was an error saving your changes. Please try again.',
-      confirmBtnText: 'OK',
+      title: 'บันทึกล้มเหลว',
+      text: 'เกิดข้อผิดพลาดในการบันทึกการเปลี่ยนแปลงของคุณ โปรดลองอีกครั้ง',
+      confirmBtnText: 'โอเค',
       onConfirmBtnTap: () {
         Navigator.pop(context); // Close the dialog
       },
@@ -522,10 +519,10 @@ class _StdFormState extends State<StdForm> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
-      title: 'Confirm Save',
-      text: 'Do you want to save the changes?',
-      confirmBtnText: 'Save',
-      cancelBtnText: 'Cancel',
+      title: 'ยืนยันการบันทึก',
+      text: 'คุณต้องการบันทึกการเปลี่ยนแปลงหรือไม่?',
+      confirmBtnText: 'บันทึก',
+      cancelBtnText: 'ยกเลิก',
       onCancelBtnTap: () {
         Navigator.pop(context); // Close the dialog
       },
@@ -543,7 +540,7 @@ class _StdFormState extends State<StdForm> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.success,
-      title: 'Success',
+      title: 'สำเร็จ',
       text: message,
       autoCloseDuration: const Duration(seconds: 3),
       showConfirmBtn: true,
@@ -554,11 +551,11 @@ class _StdFormState extends State<StdForm> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
-      title: 'Warning',
+      title: 'คำเตือน',
       text: message,
       autoCloseDuration: const Duration(seconds: 3),
       showConfirmBtn: true,
-      confirmBtnText: 'OK',
+      confirmBtnText: 'โอเค',
       confirmBtnColor: Colors.redAccent,
       onConfirmBtnTap: () {
         Navigator.of(context).pop(); // Optional: Close the dialog
@@ -639,7 +636,7 @@ class _StdFormState extends State<StdForm> {
             return validationMessage;
           }
           if (value != null && value.length != 10) {
-            return 'Input must be exactly 10 characters long.';
+            return 'ข้อมูลต้องมีความยาว 10 ตัวอักษร';
           }
           return null;
         },
