@@ -18,17 +18,13 @@ dependencies:
   fl_chart: ^0.69.0
   quickalert: ^1.1.0
   syncfusion_flutter_charts: ^27.1.51
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
   another_flutter_splash_screen: ^1.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-flutter_launcher_icons:
-  android: "ic_launcher"
-  ios: true
-  image_path: "assets/Image/Icon/icon2.png"
 
 flutter:
   assets:
